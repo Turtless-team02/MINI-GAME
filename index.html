@@ -2,116 +2,227 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>FRC 2026 REBUILT - Horizontal 1vs1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FRC 2026 REBUILT - Firebase Online Leaderboard</title>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background-color: #222; color: #fff; font-family: sans-serif; }
+        body { margin: 0; padding: 0; overflow: hidden; background-color: #222; color: #fff; font-family: 'Segoe UI', sans-serif; touch-action: none; }
         #gameCanvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); z-index: 10; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.85); z-index: 10; }
         .hidden { display: none !important; }
         
-        .menu-box { background: #444; padding: 30px; border-radius: 10px; text-align: center; border: 2px solid #f1c40f; }
-        button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; background: #f1c40f; border: none; border-radius: 5px; font-weight: bold; }
+        .menu-container { display: flex; gap: 30px; align-items: flex-start; max-width: 90%; flex-wrap: wrap; justify-content: center; }
+        .menu-box { background: #333; padding: 30px 40px; border-radius: 12px; text-align: center; border: 2px solid #f1c40f; box-shadow: 0 0 20px rgba(241,196,15,0.3); flex: 1; min-width: 300px; }
+        .ranking-box { background: rgba(20, 20, 20, 0.9); padding: 20px; border-radius: 12px; border: 1px solid #555; flex: 1; min-width: 300px; max-height: 400px; overflow-y: auto; }
         
-        #hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; z-index: 5; text-shadow: 2px 2px 2px #000; pointer-events: none; }
-        .score-board { background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 8px; border: 1px solid #555; }
-        #controls-guide { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #ccc; z-index: 5; pointer-events: none; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 10px; }
-        #loading-text { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; color: #f1c40f; z-index: 5; }
+        .ranking-title { color: #f1c40f; font-size: 20px; font-weight: bold; margin-top: 0; text-align: center; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 10px; }
+        .rank-list { list-style: none; padding: 0; margin: 0; }
+        .rank-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 16px; }
+        .rank-item.top3 { font-weight: bold; color: #f1c40f; }
+        .rank-item:nth-child(1) .rank-num { color: #FFD700; } 
+        .rank-item:nth-child(2) .rank-num { color: #C0C0C0; } 
+        .rank-item:nth-child(3) .rank-num { color: #CD7F32; } 
+        .loading-text-small { text-align: center; color: #aaa; font-size: 14px; padding: 10px; }
+
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+        button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+        .btn-easy { background: #2ecc71; color: #fff; }
+        .btn-normal { background: #f1c40f; color: #000; }
+        .btn-hard { background: #e74c3c; color: #fff; }
+        button:active { transform: scale(0.95); }
+        
+        #hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; z-index: 5; text-shadow: 2px 2px 2px #000; pointer-events: none; align-items: flex-start; }
+        .hud-panel { background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; border: 1px solid #555; display: flex; flex-direction: column; gap: 5px; }
+        
+        .slot-container { display: flex; gap: 4px; margin-top: 5px; }
+        .ball-slot { width: 14px; height: 14px; border-radius: 50%; background: #222; border: 2px solid #777; transition: background 0.2s; }
+        .ball-slot.filled { background: #f1c40f; border-color: #f39c12; box-shadow: 0 0 5px #f1c40f; }
+
+        #mobile-controls { position: absolute; bottom: 0; left: 0; width: 100%; height: 40%; z-index: 5; display: none; pointer-events: none; }
+        #joystick-zone { position: absolute; bottom: 20px; left: 20px; width: 120px; height: 120px; pointer-events: auto; }
+        #btn-shoot { position: absolute; bottom: 30px; right: 30px; width: 80px; height: 80px; border-radius: 50%; background: rgba(241, 196, 15, 0.7); border: 4px solid #f39c12; color: #fff; font-size: 18px; font-weight: bold; pointer-events: auto; user-select: none; }
+        #btn-shoot:active { background: rgba(241, 196, 15, 1); transform: scale(0.9); }
+        
+        #loading-text { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: bold; color: #f1c40f; z-index: 5; }
+
+        @media (max-width: 768px) {
+            #mobile-controls { display: block; }
+            #hud { font-size: 14px; }
+        }
     </style>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
     <div id="main-menu" class="ui-layer">
-        <div class="menu-box">
-            <h1>FRC 2026: REBUILT</h1>
-            <p>가로형 1:1 매치 및 포물선 발사 물리 구현</p>
-            <button onclick="startLoading()">게임 시작</button>
+        <div class="menu-container">
+            <div class="menu-box">
+                <h1>FRC 2026: REBUILT</h1>
+                <p>상대 봇(AI) 난이도를 선택하세요</p>
+                <div class="btn-group">
+                    <button class="btn-easy" onclick="startLoading('EASY')">EASY</button>
+                    <button class="btn-normal" onclick="startLoading('NORMAL')">NORMAL</button>
+                    <button class="btn-hard" onclick="startLoading('HARD')">HARD</button>
+                </div>
+            </div>
+            
+            <div class="ranking-box">
+                <h2 class="ranking-title">🌐 GLOBAL TOP 10</h2>
+                <ul class="rank-list" id="rank-list">
+                    <div class="loading-text-small">서버에서 랭킹을 불러오는 중...</div>
+                </ul>
+            </div>
         </div>
     </div>
 
     <div id="hud" class="hidden">
-        <div class="score-board">⏱️ TIME: <span id="time-display">135</span>s</div>
-        <div class="score-board">🔵 PLAYER: <span id="ball-count">0/7</span> | 🔴 AI: <span id="ai-ball-count">0/7</span></div>
-        <div class="score-board">🎯 SCORE - BLUE: <span id="score-display" style="color:#3498db">0</span> vs RED: <span id="ai-score-display" style="color:#e74c3c">0</span></div>
+        <div class="hud-panel">
+            <div>⏱️ 남은 시간: <span id="time-display">135</span>s</div>
+            <div>🔵 BLUE (나): <span id="score-display" style="color:#3498db">0</span>점</div>
+            <div class="slot-container" id="player-slots"></div>
+        </div>
+        <div class="hud-panel" style="align-items: flex-end;">
+            <div>🔴 RED (AI): <span id="ai-score-display" style="color:#e74c3c">0</span>점</div>
+            <div class="slot-container" id="ai-slots"></div>
+        </div>
     </div>
 
-    <div id="controls-guide" class="hidden">이동: WASD | 공 발사: Spacebar (우측 RED 골대 조준, 사거리 확보 필요)</div>
-    <div id="loading-text" class="hidden">FRC 규격 경기장 빌드 중...</div>
+    <div id="mobile-controls">
+        <div id="joystick-zone"></div>
+        <button id="btn-shoot">SHOOT</button>
+    </div>
 
+    <div id="loading-text" class="hidden">경기장 셋업 중...</div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
-        let gameState = 'MENU';
-        let timeLeft = 135;
-        let totalDroppedCycles = 0; 
+        // ==========================================
+        // 1. 발급받으신 Firebase 실제 Config 반영 완료!
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCYU2zBQ9teeh2DVusA1d-qB_ABIvFI_Bs",
+            authDomain: "turtless-mini-game-1ef0a.firebaseapp.com",
+            projectId: "turtless-mini-game-1ef0a",
+            storageBucket: "turtless-mini-game-1ef0a.firebasestorage.app",
+            messagingSenderId: "277255465210",
+            appId: "1:277255465210:web:0ec0d5220bfb2ef77a4143",
+            measurementId: "G-BZ81PNN533"
+        };
         
-        let score = 0, ballCount = 0; 
-        let aiScore = 0, aiBallCount = 0, aiShootCooldown = 0;
-        
-        let gameInterval, dropInterval;
-        let fieldBalls = [];  
-        let activeBullets = []; 
-        const GRAVITY = 0.015; // 포물선용 중력 상수
+        // Firebase 및 Firestore 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let leaderboard = [];
 
-        // --- Three.js 세팅 ---
+        // 데이터베이스에서 실시간 Top 10 점수 불러오기
+        function fetchLeaderboard() {
+            db.collection("rankings").orderBy("score", "desc").limit(10).get()
+            .then((querySnapshot) => {
+                leaderboard = [];
+                querySnapshot.forEach((doc) => leaderboard.push(doc.data()));
+                renderLeaderboard();
+            })
+            .catch((error) => {
+                console.error("Firebase 로드 에러:", error);
+                document.getElementById('rank-list').innerHTML = 
+                    `<div class="loading-text-small" style="color:#ff7675;">데이터베이스 규칙(Rules)이<br>'테스트 모드'인지 확인하세요!</div>`;
+            });
+        }
+
+        // 랭킹 UI 렌더링
+        function renderLeaderboard() {
+            const listObj = document.getElementById('rank-list');
+            listObj.innerHTML = '';
+            if (leaderboard.length === 0) {
+                listObj.innerHTML = '<div class="loading-text-small">아직 등록된 랭킹이 없습니다.<br>첫 랭커가 되어보세요!</div>';
+                return;
+            }
+            leaderboard.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.className = `rank-item ${index < 3 ? 'top3' : ''}`;
+                li.innerHTML = `<span class="rank-num">${index + 1}위</span> <span class="rank-name">${entry.name}</span> <span class="rank-score">${entry.score}점</span>`;
+                listObj.appendChild(li);
+            });
+        }
+        
+        // 최초 실행 시 서버 점수 조회
+        fetchLeaderboard();
+
+        // ==========================================
+        // 2. 게임 물리 및 기본 시스템 변수
+        // ==========================================
+        let gameState = 'MENU', timeLeft = 135, totalDroppedCycles = 0; 
+        let score = 0, ballCount = 0, aiScore = 0, aiBallCount = 0, aiShootCooldown = 0;
+        
+        const aiStats = {
+            'EASY':   { speed: 0.05, shootDelay: 80, errorMargin: 4.0 },
+            'NORMAL': { speed: 0.09, shootDelay: 50, errorMargin: 1.5 },
+            'HARD':   { speed: 0.14, shootDelay: 30, errorMargin: 0.3 }
+        };
+        let activeAiConfig = aiStats['NORMAL'];
+        let gameInterval, dropInterval;
+        let fieldBalls = [], activeBullets = []; 
+        const GRAVITY = 0.015; 
+        const GLOBAL_YELLOW_MAT = new THREE.MeshLambertMaterial({ color: 0xf1c40f });
+
+        function createSlots(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for(let i=0; i<7; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'ball-slot';
+                container.appendChild(slot);
+            }
+        }
+        createSlots('player-slots'); createSlots('ai-slots');
+
+        function updateSlots(containerId, count) {
+            const slots = document.getElementById(containerId).children;
+            for(let i=0; i<7; i++) {
+                if(i < count) slots[i].classList.add('filled');
+                else slots[i].classList.remove('filled');
+            }
+        }
+
+        // 3D 공간 생성
         const canvas = document.getElementById('gameCanvas');
         const scene = new THREE.Scene();
-        
-        // 가로형 경기장을 비스듬히 중계 뷰로 바라보는 카메라
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 16, 18);
-        camera.lookAt(0, -1, 0);
+        camera.position.set(0, 16, 18); camera.lookAt(0, -1, 0);
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(0, 20, 10);
-        scene.add(dirLight);
+        dirLight.position.set(0, 20, 10); scene.add(dirLight);
 
-        // 1. 가로형 경기장 바닥 (가로 26, 세로 14 표준 비율 근사치)
-        const floorGeo = new THREE.PlaneGeometry(26, 14);
-        const floorMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI / 2;
-        scene.add(floor);
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(26, 14), new THREE.MeshLambertMaterial({ color: 0x222222 }));
+        floor.rotation.x = -Math.PI / 2; scene.add(floor);
         
-        // 센터 라인 (가로 경기장 분할)
         const centerLine = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 14), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-        centerLine.rotation.x = -Math.PI / 2;
-        centerLine.position.set(0, 0.01, 0);
-        scene.add(centerLine);
+        centerLine.rotation.x = -Math.PI / 2; centerLine.position.set(0, 0.01, 0); scene.add(centerLine);
 
-        // 2. 임시 골대 구조물 (좌/우 배치)
         const goalGeo = new THREE.BoxGeometry(1.5, 3, 4);
-        
-        // BLUE 얼라이언스 골대 (왼쪽 끝 - 플레이어가 맞춰야 하는 타겟은 반대편 우측 RED 골대)
         const blueGoal = new THREE.Mesh(goalGeo, new THREE.MeshLambertMaterial({ color: 0x3498db }));
-        blueGoal.position.set(-12.5, 1.5, 0);
-        scene.add(blueGoal);
-
-        // RED 얼라이언스 골대 (오른쪽 끝 - AI가 맞춰야 하는 타겟은 좌측 BLUE 골대)
+        blueGoal.position.set(-12.5, 1.5, 0); scene.add(blueGoal);
         const redGoal = new THREE.Mesh(goalGeo, new THREE.MeshLambertMaterial({ color: 0xe74c3c }));
-        redGoal.position.set(12.5, 1.5, 0);
-        scene.add(redGoal);
+        redGoal.position.set(12.5, 1.5, 0); scene.add(redGoal);
 
-        // 3. 로봇 세팅
         const robotGeo = new THREE.BoxGeometry(1.2, 1, 1.2);
-        
-        // 플레이어 로봇 (왼쪽 진영 스타트)
         const playerRobot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0x2980b9 }));
-        playerRobot.position.set(-6, 0.5, 0); 
-        scene.add(playerRobot);
-
-        // AI 로봇 (오른쪽 진영 스타트)
+        playerRobot.position.set(-6, 0.5, 0); scene.add(playerRobot);
         const aiRobot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0xc0392b }));
-        aiRobot.position.set(6, 0.5, 0); 
-        scene.add(aiRobot);
+        aiRobot.position.set(6, 0.5, 0); scene.add(aiRobot);
 
-        // --- 키보드 제어 ---
         const keys = { w: false, a: false, s: false, d: false };
+        let joystickVector = { x: 0, y: 0 };
+
         window.addEventListener('keydown', (e) => { 
             if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; 
             if(e.code === 'Space' && gameState === 'PLAYING') shootBall('PLAYER');
@@ -120,191 +231,165 @@
             if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; 
         });
 
-        function startLoading() {
+        document.getElementById('btn-shoot').addEventListener('touchstart', (e) => {
+            e.preventDefault(); if(gameState === 'PLAYING') shootBall('PLAYER');
+        });
+
+        const joystickManager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: { left: '50%', top: '50%' }, color: '#f1c40f' });
+        joystickManager.on('move', (evt, data) => {
+            const force = Math.min(data.force, 1);
+            joystickVector.x = Math.cos(data.angle.radian) * force;
+            joystickVector.y = -Math.sin(data.angle.radian) * force; 
+        });
+        joystickManager.on('end', () => { joystickVector = { x: 0, y: 0 }; });
+
+        function startLoading(difficulty) {
+            currentDifficulty = difficulty; activeAiConfig = aiStats[difficulty]; 
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('loading-text').classList.remove('hidden');
-            gameState = 'LOADING';
-            setTimeout(startGame, 1500); 
+            gameState = 'LOADING'; setTimeout(startGame, 1000); 
         }
 
         function startGame() {
             document.getElementById('loading-text').classList.add('hidden');
             document.getElementById('hud').classList.remove('hidden');
-            document.getElementById('controls-guide').classList.remove('hidden');
             gameState = 'PLAYING';
-
             gameInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('time-display').innerText = timeLeft;
+                timeLeft--; document.getElementById('time-display').innerText = timeLeft;
                 if (timeLeft <= 0) endGame();
             }, 1000);
-
-            dropBalls(); 
-            dropInterval = setInterval(() => {
-                if (totalDroppedCycles < 10) dropBalls();
-            }, 12000);
+            dropBalls(); dropInterval = setInterval(() => { if (totalDroppedCycles < 10) dropBalls(); }, 12000);
         }
 
-        // 중앙 영역 위주로 공 투하
         function dropBalls() {
             totalDroppedCycles++;
-            const ballGeo = new THREE.SphereGeometry(0.25, 16, 16);
-            const ballMat = new THREE.MeshLambertMaterial({ color: 0xf1c40f }); 
-
             for(let i=0; i<10; i++) {
-                const ball = new THREE.Mesh(ballGeo, ballMat);
-                ball.position.set(
-                    (Math.random() - 0.5) * 10, // 가로 중앙 기준
-                    6 + Math.random() * 2, 
-                    (Math.random() - 0.5) * 10
-                );
-                scene.add(ball);
-                fieldBalls.push(ball);
+                const ball = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), GLOBAL_YELLOW_MAT);
+                ball.position.set((Math.random() - 0.5) * 10, 6 + Math.random() * 2, (Math.random() - 0.5) * 10);
+                scene.add(ball); fieldBalls.push(ball);
             }
         }
 
-        // --- 물리 적용 포물선 발사 로직 ---
         function shootBall(shooter) {
-            let startPos, targetGoalPos, owner;
-
+            let startPos, targetGoalPos, owner, spreadX = 0, spreadZ = 0; 
             if (shooter === 'PLAYER') {
                 if (ballCount <= 0) return; 
-                ballCount--;
-                document.getElementById('ball-count').innerText = `${ballCount}/7`;
-                startPos = playerRobot.position;
-                targetGoalPos = new THREE.Vector3(12.5, 2.5, 0); // 상대방 골대 조준 (오른쪽)
-                owner = 'PLAYER';
+                ballCount--; updateSlots('player-slots', ballCount); 
+                startPos = playerRobot.position; targetGoalPos = new THREE.Vector3(12.5, 2.5, 0); owner = 'PLAYER';
+                spreadX = (Math.random() - 0.5) * 0.8; spreadZ = (Math.random() - 0.5) * 0.8;
             } else {
                 if (aiBallCount <= 0) return;
-                aiBallCount--;
-                document.getElementById('ai-ball-count').innerText = `${aiBallCount}/7`;
-                startPos = aiRobot.position;
-                targetGoalPos = new THREE.Vector3(-12.5, 2.5, 0); // 상대방 골대 조준 (왼쪽)
-                owner = 'AI';
+                aiBallCount--; updateSlots('ai-slots', aiBallCount);
+                startPos = aiRobot.position; targetGoalPos = new THREE.Vector3(-12.5, 2.5, 0); owner = 'AI';
+                spreadX = (Math.random() - 0.5) * activeAiConfig.errorMargin; spreadZ = (Math.random() - 0.5) * activeAiConfig.errorMargin;
             }
 
-            const bullet = new THREE.Mesh(
-                new THREE.SphereGeometry(0.25, 16, 16),
-                new THREE.MeshLambertMaterial({ color: shooter === 'PLAYER' ? 0x3498db : 0xe74c3c })
-            );
-            bullet.position.copy(startPos);
-            bullet.position.y = 1.0; 
-            scene.add(bullet);
+            const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), GLOBAL_YELLOW_MAT);
+            bullet.position.copy(startPos); bullet.position.y = 1.0; scene.add(bullet);
 
-            // 거리 계산을 통한 고정 포물선 속도 벡타 계산
-            const distanceX = targetGoalPos.x - startPos.x;
-            const distanceZ = targetGoalPos.z - startPos.z;
-            
-            // 수평 이동 소요 프레임 설정 (거리에 비례하도록)
+            const distanceX = (targetGoalPos.x + spreadX) - startPos.x;
+            const distanceZ = (targetGoalPos.z + spreadZ) - startPos.z;
             const travelFrames = Math.abs(distanceX) * 3.5; 
-            
-            const vx = distanceX / travelFrames;
-            const vz = distanceZ / travelFrames;
-            // 중력을 거슬러 솟구쳤다 떨어지게 만드는 Y축 초기 속도 수식
+            const vx = distanceX / travelFrames; const vz = distanceZ / travelFrames;
             const vy = (targetGoalPos.y - startPos.y) / travelFrames + 0.5 * GRAVITY * travelFrames;
 
-            activeBullets.push({
-                mesh: bullet,
-                velocity: new THREE.Vector3(vx, vy, vz),
-                targetPos: targetGoalPos,
-                owner: owner
-            });
+            activeBullets.push({ mesh: bullet, velocity: new THREE.Vector3(vx, vy, vz), targetPos: targetGoalPos, owner: owner });
         }
 
         function gameLoop() {
             requestAnimationFrame(gameLoop);
-
             if (gameState === 'PLAYING') {
-                // 1. 가로형 맵 제한 플레이어 이동
-                const speed = 0.15;
-                if (keys.w && playerRobot.position.z > -6.5) playerRobot.position.z -= speed;
-                if (keys.s && playerRobot.position.z < 6.5)  playerRobot.position.z += speed;
-                if (keys.a && playerRobot.position.x > -11.5) playerRobot.position.x -= speed;
-                if (keys.d && playerRobot.position.x < 11.5) playerRobot.position.x += speed;
+                const speed = 0.15; let moveX = 0, moveZ = 0;
+                if (keys.w) moveZ -= speed; if (keys.s) moveZ += speed;
+                if (keys.a) moveX -= speed; if (keys.d) moveX += speed;
+                if (joystickVector.x !== 0 || joystickVector.y !== 0) { moveX = joystickVector.x * speed; moveZ = joystickVector.y * speed; }
 
-                // 2. AI 봇 인공지능 (가까운 공 탐색 및 조건부 사거리 슈팅)
+                if (playerRobot.position.z + moveZ > -6.5 && playerRobot.position.z + moveZ < 6.5) playerRobot.position.z += moveZ;
+                if (playerRobot.position.x + moveX > -11.5 && playerRobot.position.x + moveX < 11.5) playerRobot.position.x += moveX;
+
                 if (aiShootCooldown > 0) aiShootCooldown--;
 
                 if (aiBallCount < 7 && fieldBalls.length > 0) {
-                    let targetBall = fieldBalls[0];
-                    let minDist = aiRobot.position.distanceTo(targetBall.position);
+                    let targetBall = fieldBalls[0]; let minDist = aiRobot.position.distanceTo(targetBall.position);
                     for (let i = 1; i < fieldBalls.length; i++) {
                         let dist = aiRobot.position.distanceTo(fieldBalls[i].position);
                         if (dist < minDist) { minDist = dist; targetBall = fieldBalls[i]; }
                     }
-                    const moveDir = new THREE.Vector3().subVectors(targetBall.position, aiRobot.position);
-                    moveDir.y = 0; 
-                    if (moveDir.length() > 0.1) {
-                        moveDir.normalize();
-                        aiRobot.position.addScaledVector(moveDir, 0.09);
-                    }
+                    const moveDir = new THREE.Vector3().subVectors(targetBall.position, aiRobot.position); moveDir.y = 0; 
+                    if (moveDir.length() > 0.1) { moveDir.normalize(); aiRobot.position.addScaledVector(moveDir, activeAiConfig.speed); }
                 } else if (aiBallCount > 0 && aiShootCooldown <= 0) {
-                    // 사거리가 너무 가깝거나 멀지 않을 때 슛 폭발 확률 상승 시뮬레이션
-                    shootBall('AI');
-                    aiShootCooldown = 50; 
+                    shootBall('AI'); aiShootCooldown = activeAiConfig.shootDelay; 
                 }
 
-                // 3. 공 수집
                 for (let i = fieldBalls.length - 1; i >= 0; i--) {
-                    const ball = fieldBalls[i];
-                    if (ball.position.y > 0.25) ball.position.y -= 0.1; 
-
+                    const ball = fieldBalls[i]; if (ball.position.y > 0.25) ball.position.y -= 0.1; 
                     if (playerRobot.position.distanceTo(ball.position) < 1.1 && ballCount < 7) { 
-                        scene.remove(ball); fieldBalls.splice(i, 1); ballCount++;
-                        document.getElementById('ball-count').innerText = `${ballCount}/7`;
-                        continue;
+                        scene.remove(ball); fieldBalls.splice(i, 1); ballCount++; updateSlots('player-slots', ballCount); continue;
                     }
                     if (aiRobot.position.distanceTo(ball.position) < 1.1 && aiBallCount < 7) { 
-                        scene.remove(ball); fieldBalls.splice(i, 1); aiBallCount++;
-                        document.getElementById('ai-ball-count').innerText = `${aiBallCount}/7`;
+                        scene.remove(ball); fieldBalls.splice(i, 1); aiBallCount++; updateSlots('ai-slots', aiBallCount);
                     }
                 }
 
-                // 4. 포물선 날아가기 및 실제 과녁 도달 판정
                 for (let i = activeBullets.length - 1; i >= 0; i--) {
                     const bullet = activeBullets[i];
-                    
-                    // 위치에 가속도(물리 벡터) 더하기
-                    bullet.mesh.position.add(bullet.velocity);
-                    // Y축 속도에 중력 차감하여 아래로 꺾이게 만듦
-                    bullet.velocity.y -= GRAVITY;
+                    bullet.mesh.position.add(bullet.velocity); bullet.velocity.y -= GRAVITY;
 
-                    // 골대 구조물 상단 히트박스 판정
-                    const distToGoal = bullet.mesh.position.distanceTo(bullet.targetPos);
-                    
-                    if (distToGoal < 1.8) { // 골대 정밀 유효 반경 충돌 시 득점
-                        if (bullet.owner === 'PLAYER') {
-                            score++; document.getElementById('score-display').innerText = score;
-                        } else {
-                            aiScore++; document.getElementById('ai-score-display').innerText = aiScore;
-                        }
-                        scene.remove(bullet.mesh);
-                        activeBullets.splice(i, 1);
-                    } 
-                    // 바닥이나 맵 밖으로 떨어지면 노골 처리 후 소멸
-                    else if (bullet.mesh.position.y < 0.1 || Math.abs(bullet.mesh.position.x) > 15) {
-                        scene.remove(bullet.mesh);
-                        activeBullets.splice(i, 1);
+                    if (bullet.mesh.position.distanceTo(bullet.targetPos) < 1.8) { 
+                        if (bullet.owner === 'PLAYER') { score++; document.getElementById('score-display').innerText = score; } 
+                        else { aiScore++; document.getElementById('ai-score-display').innerText = aiScore; }
+                        scene.remove(bullet.mesh); activeBullets.splice(i, 1);
+                    } else if (bullet.mesh.position.y < 0.1 || Math.abs(bullet.mesh.position.x) > 15 || Math.abs(bullet.mesh.position.z) > 10) {
+                        scene.remove(bullet.mesh); activeBullets.splice(i, 1);
                     }
                 }
             }
-
             renderer.render(scene, camera);
         }
 
+        // ==========================================
+        // 3. 게임 오버 & 데이터베이스 랭킹 업로드
+        // ==========================================
         function endGame() {
             clearInterval(gameInterval); clearInterval(dropInterval);
             gameState = 'MENU';
-            alert(`경기 종료!\n최종 점수 - PLAYER: ${score}점 | AI: ${aiScore}점`);
-            location.reload();
+            
+            const lowestTop10Score = leaderboard.length < 10 ? 0 : leaderboard[leaderboard.length - 1].score;
+            
+            // 점수가 0점보다 크고, Top 10 진입 커트라인을 넘었을 때 기록 등록
+            if (score > 0 && (score > lowestTop10Score || leaderboard.length < 10)) {
+                setTimeout(() => {
+                    let nick = prompt(`🎉 온라인 Top 10 진입을 축하합니다!\n내 점수: ${score}점\n전 세계 유저들에게 보여질 닉네임을 입력하세요:`, "Player");
+                    if (nick) {
+                        nick = nick.substring(0, 10); // 최대 10글자 제한
+                        
+                        // Firebase의 'rankings' 컬렉션에 유저 점수 기록 저장
+                        db.collection("rankings").add({
+                            name: nick,
+                            score: score,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then(() => {
+                            alert(`서버에 성공적으로 등록되었습니다!\n최종 결과: 플레이어 ${score}점 / AI ${aiScore}점`);
+                            location.reload();
+                        }).catch((error) => {
+                            console.error("랭킹 등록 실패:", error);
+                            alert("서버 등록에 실패했습니다. Firestore의 'Rules(규칙)' 탭이 테스트 모드로 세팅되어 있는지 확인하세요!");
+                            location.reload();
+                        });
+                    } else {
+                        alert(`최종 결과: 플레이어 ${score}점 / AI ${aiScore}점\n(기록을 등록하지 않았습니다.)`);
+                        location.reload();
+                    }
+                }, 300);
+            } else {
+                alert(`경기 종료!\n최종 결과: 플레이어 ${score}점 / AI ${aiScore}점\n(아쉽게도 온라인 Top 10 기록 갱신에 실패했습니다.)`);
+                location.reload();
+            }
         }
 
         gameLoop();
-
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
