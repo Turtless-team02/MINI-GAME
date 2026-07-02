@@ -377,18 +377,42 @@
                     }
                 }
 
+                                // 발사된 공(activeBullets) 이동 및 물리(바운스) 처리
                 for (let i = activeBullets.length - 1; i >= 0; i--) {
                     const bullet = activeBullets[i];
-                    bullet.mesh.position.add(bullet.velocity); bullet.velocity.y -= GRAVITY;
+                    bullet.mesh.position.add(bullet.velocity); 
+                    bullet.velocity.y -= GRAVITY;
 
+                    // 1. 골대 판정 (들어갔을 때)
                     if (bullet.mesh.position.distanceTo(bullet.targetPos) < 1.8) { 
                         if (bullet.owner === 'PLAYER') { score++; document.getElementById('score-display').innerText = score; } 
                         else { aiScore++; document.getElementById('ai-score-display').innerText = aiScore; }
-                        scene.remove(bullet.mesh); activeBullets.splice(i, 1);
-                    } else if (bullet.mesh.position.y < 0.1 || Math.abs(bullet.mesh.position.x) > 15 || Math.abs(bullet.mesh.position.z) > 10) {
-                        scene.remove(bullet.mesh); activeBullets.splice(i, 1);
+                        scene.remove(bullet.mesh); 
+                        activeBullets.splice(i, 1);
+                        continue; // 골인했으므로 다음 공으로 넘어감
+                    } 
+                    
+                    // 2. 빗나간 공 벽 바운스 (x축: 앞뒤 벽, z축: 양옆 벽)
+                    if (bullet.mesh.position.x > 12.7) { bullet.mesh.position.x = 12.7; bullet.velocity.x *= -0.6; }
+                    if (bullet.mesh.position.x < -12.7) { bullet.mesh.position.x = -12.7; bullet.velocity.x *= -0.6; }
+                    if (bullet.mesh.position.z > 6.7) { bullet.mesh.position.z = 6.7; bullet.velocity.z *= -0.6; }
+                    if (bullet.mesh.position.z < -6.7) { bullet.mesh.position.z = -6.7; bullet.velocity.z *= -0.6; }
+
+                    // 3. 바닥에 닿았을 때 튕김 및 필드 공으로 변환(재활용)
+                    if (bullet.mesh.position.y <= 0.25) {
+                        bullet.mesh.position.y = 0.25;
+                        bullet.velocity.y *= -0.5; // 바닥에 닿으면 통통 튐
+                        bullet.velocity.x *= 0.8;  // 바닥 마찰력으로 굴러가다 멈춤
+                        bullet.velocity.z *= 0.8;
+
+                        // 속도가 충분히 줄어들어 멈출 때가 되면 다시 주울 수 있는 '필드 공'으로 넘김
+                        if (Math.abs(bullet.velocity.y) < 0.1 && Math.abs(bullet.velocity.x) < 0.05 && Math.abs(bullet.velocity.z) < 0.05) {
+                            fieldBalls.push(bullet.mesh);
+                            activeBullets.splice(i, 1);
+                        }
                     }
                 }
+
             }
             renderer.render(scene, camera);
         }
