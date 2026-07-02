@@ -269,10 +269,42 @@
         window.addEventListener('keydown', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; if(e.code === 'Space' && gameState === 'PLAYING') shootBall('PLAYER'); });
         window.addEventListener('keyup', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
         document.getElementById('btn-shoot').addEventListener('touchstart', (e) => { e.preventDefault(); if(gameState === 'PLAYING') shootBall('PLAYER'); });
+        document.getElementById('btn-shoot').addEventListener('mousedown', (e) => { e.preventDefault(); if(gameState === 'PLAYING') shootBall('PLAYER'); });
 
-        const joystickManager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: { left: '50%', top: '50%' }, color: '#f1c40f' });
-        joystickManager.on('move', (evt, data) => { const force = Math.min(data.force, 1); joystickVector.x = Math.cos(data.angle.radian) * force; joystickVector.y = -Math.sin(data.angle.radian) * force; });
-        joystickManager.on('end', () => { joystickVector = { x: 0, y: 0 }; });
+
+        // --- 모바일 컨트롤러 반응형 초기화 ---
+let joystickManager = null;
+
+function initMobileControls() {
+    const mobileControls = document.getElementById('mobile-controls');
+    // 화면 넓이가 768px 이하이거나 터치 기기일 경우 모바일 UI 켜기
+    if (window.innerWidth <= 768 || 'ontouchstart' in window) {
+        mobileControls.style.display = 'block'; // 화면에 먼저 표시
+        
+        // 조이스틱이 아직 안 만들어졌다면 생성
+        if (!joystickManager) {
+            joystickManager = nipplejs.create({ 
+                zone: document.getElementById('joystick-zone'), 
+                mode: 'static', 
+                position: { left: '50%', top: '50%' }, 
+                color: '#f1c40f' 
+            });
+            joystickManager.on('move', (evt, data) => { 
+                const force = Math.min(data.force, 1); 
+                joystickVector.x = Math.cos(data.angle.radian) * force; 
+                joystickVector.y = -Math.sin(data.angle.radian) * force; 
+            });
+            joystickManager.on('end', () => { joystickVector = { x: 0, y: 0 }; });
+        }
+    } else {
+        mobileControls.style.display = 'none'; // PC 화면이면 숨기기
+    }
+}
+
+// 처음 켰을 때와 창 크기를 조절할 때마다 모바일 UI 체크
+initMobileControls();
+window.addEventListener('resize', initMobileControls);
+// ------------------------------------
 
         function startLoading(difficulty) {
             currentDifficulty = difficulty; activeAiConfig = aiStats[difficulty]; 
