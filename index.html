@@ -403,21 +403,47 @@ window.addEventListener('resize', initMobileControls);
             renderer.render(scene, camera);
         }
 
-        function endGame() {
-            clearInterval(gameInterval); clearInterval(dropInterval); gameState = 'MENU';
+                function endGame() {
+            clearInterval(gameInterval); 
+            clearInterval(dropInterval); 
+            gameState = 'MENU';
+            
             const lowestTop10Score = leaderboard.length < 10 ? 0 : leaderboard[leaderboard.length - 1].score;
-            if (score > 0 && (score > lowestTop10Score || leaderboard.length < 10)) {
+            
+            // 랭킹 등록 조건: 노멀 모드(NORMAL)이면서, 점수가 0보다 크고, 탑10 안에 들었을 때만
+            if (currentDifficulty === 'NORMAL' && score > 0 && (score > lowestTop10Score || leaderboard.length < 10)) {
                 setTimeout(() => {
-                    let nick = prompt(`[GLOBAL TOP 10 ENTRY]\nSCORE: ${score} PTS\nEnter your Nickname (max 10 chars):`, "Player");
+                    let nick = prompt(`[GLOBAL TOP 10 ENTRY - NORMAL MODE]\nSCORE: ${score} PTS\nEnter your Nickname (max 10 chars):`, "Player");
                     if (nick) {
                         nick = nick.substring(0, 10);
-                        db.collection("rankings").add({ name: nick, score: score, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
-                        .then(() => { alert(`SUCCESS!\nFINAL SCORE: YOU ${score} - ${aiScore} AI`); location.reload(); })
-                        .catch(() => { alert("Server Error."); location.reload(); });
-                    } else { location.reload(); }
+                        db.collection("rankings").add({ 
+                            name: nick, 
+                            score: score, 
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+                        })
+                        .then(() => { 
+                            alert(`SUCCESS!\nFINAL SCORE: YOU ${score} - ${aiScore} AI`); 
+                            location.reload(); 
+                        })
+                        .catch(() => { 
+                            alert("Server Error."); 
+                            location.reload(); 
+                        });
+                    } else { 
+                        location.reload(); 
+                    }
                 }, 400);
-            } else { alert(`MATCH OVER!\nFINAL SCORE: YOU ${score} - ${aiScore} AI`); location.reload(); }
+            } else { 
+                // 노멀 모드가 아니거나 랭킹 진입에 실패했을 때의 메시지 처리
+                let alertMsg = `MATCH OVER!\nFINAL SCORE: YOU ${score} - ${aiScore} AI`;
+                if (currentDifficulty !== 'NORMAL') {
+                    alertMsg += `\n\n* Leaderboard entry is only available in NORMAL MODE.`;
+                }
+                alert(alertMsg); 
+                location.reload(); 
+            }
         }
+
 
         gameLoop();
         window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
