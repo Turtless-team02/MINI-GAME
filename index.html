@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FRC 2026 REBUILT - Clean UI</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght=500;700;900&display=swap" rel="stylesheet">
     
     <style>
         /* 기본 스타일 */
@@ -60,17 +60,12 @@
         .timer-danger { color: #ef4444; animation: pulse-text 0.5s infinite alternate; }
         @keyframes pulse-text { from { opacity: 0.6; } to { opacity: 1; } }
 
-                /* 탄약 슬롯 컨테이너 (정렬 및 간격 최적화) */
-        .slot-container { 
-            display: flex; 
-            gap: 8px; 
-            margin-top: 8px; 
-        }
+        /* 탄약 슬롯 컨테이너 (정렬 및 간격 최적화) */
+        .slot-container { display: flex; gap: 8px; margin-top: 8px; }
 
         /* 둥근 공 모양의 슬롯 디자인 */
         .ball-slot { 
-            width: 14px; 
-            height: 14px; 
+            width: 14px; height: 14px; 
             background: rgba(255, 255, 255, 0.05); 
             border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 50%; 
@@ -80,8 +75,7 @@
 
         /* 공이 채워졌을 때 (입체감 있는 노란 구체 느낌) */
         .ball-slot.filled { 
-            background: #f1c40f; 
-            border-color: #fff; 
+            background: #f1c40f; border-color: #fff; 
             box-shadow: 0 0 12px #f1c40f, inset -2px -2px 4px rgba(0,0,0,0.3); 
             transform: scale(1.1); 
         }
@@ -103,7 +97,6 @@
         }
     </style>
 
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -215,6 +208,7 @@
         // ==========================================
         let gameState = 'MENU', timeLeft = 135, totalDroppedCycles = 0; 
         let score = 0, ballCount = 0, aiScore = 0, aiBallCount = 0, aiShootCooldown = 0;
+        let currentDifficulty = 'NORMAL'; // 전역 변수 안전하게 선언 완료
         
         const aiStats = { 'EASY': { speed: 0.05, shootDelay: 80, errorMargin: 4.0 }, 'NORMAL': { speed: 0.09, shootDelay: 50, errorMargin: 1.5 }, 'HARD': { speed: 0.14, shootDelay: 30, errorMargin: 0.3 } };
         let activeAiConfig = aiStats['NORMAL'];
@@ -268,46 +262,42 @@
         const keys = { w: false, a: false, s: false, d: false }; let joystickVector = { x: 0, y: 0 };
         window.addEventListener('keydown', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; if(e.code === 'Space' && gameState === 'PLAYING') shootBall('PLAYER'); });
         window.addEventListener('keyup', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
+
+        // --- 모바일 컨트롤러 반응형 초기화 ---
+        let joystickManager = null;
+
+        function initMobileControls() {
+            const mobileControls = document.getElementById('mobile-controls');
+            if (window.innerWidth <= 768 || 'ontouchstart' in window) {
+                mobileControls.style.display = 'block';
+                if (!joystickManager) {
+                    joystickManager = nipplejs.create({ 
+                        zone: document.getElementById('joystick-zone'), 
+                        mode: 'static', 
+                        position: { left: '50%', top: '50%' }, 
+                        color: '#f1c40f' 
+                    });
+                    joystickManager.on('move', (evt, data) => { 
+                        const force = Math.min(data.force, 1); 
+                        joystickVector.x = Math.cos(data.angle.radian) * force; 
+                        joystickVector.y = -Math.sin(data.angle.radian) * force; 
+                    });
+                    joystickManager.on('end', () => { joystickVector = { x: 0, y: 0 }; });
+                }
+            } else {
+                mobileControls.style.display = 'none';
+            }
+        }
+
+        initMobileControls();
+        window.addEventListener('resize', initMobileControls);
+
         document.getElementById('btn-shoot').addEventListener('touchstart', (e) => { e.preventDefault(); if(gameState === 'PLAYING') shootBall('PLAYER'); });
         document.getElementById('btn-shoot').addEventListener('mousedown', (e) => { e.preventDefault(); if(gameState === 'PLAYING') shootBall('PLAYER'); });
 
-
-        // --- 모바일 컨트롤러 반응형 초기화 ---
-let joystickManager = null;
-
-function initMobileControls() {
-    const mobileControls = document.getElementById('mobile-controls');
-    // 화면 넓이가 768px 이하이거나 터치 기기일 경우 모바일 UI 켜기
-    if (window.innerWidth <= 768 || 'ontouchstart' in window) {
-        mobileControls.style.display = 'block'; // 화면에 먼저 표시
-        
-        // 조이스틱이 아직 안 만들어졌다면 생성
-        if (!joystickManager) {
-            joystickManager = nipplejs.create({ 
-                zone: document.getElementById('joystick-zone'), 
-                mode: 'static', 
-                position: { left: '50%', top: '50%' }, 
-                color: '#f1c40f' 
-            });
-            joystickManager.on('move', (evt, data) => { 
-                const force = Math.min(data.force, 1); 
-                joystickVector.x = Math.cos(data.angle.radian) * force; 
-                joystickVector.y = -Math.sin(data.angle.radian) * force; 
-            });
-            joystickManager.on('end', () => { joystickVector = { x: 0, y: 0 }; });
-        }
-    } else {
-        mobileControls.style.display = 'none'; // PC 화면이면 숨기기
-    }
-}
-
-// 처음 켰을 때와 창 크기를 조절할 때마다 모바일 UI 체크
-initMobileControls();
-window.addEventListener('resize', initMobileControls);
-// ------------------------------------
-
         function startLoading(difficulty) {
-            currentDifficulty = difficulty; activeAiConfig = aiStats[difficulty]; 
+            currentDifficulty = difficulty; // 선택된 난이도 주입
+            activeAiConfig = aiStats[difficulty]; 
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('loading-text').classList.remove('hidden');
             gameState = 'LOADING'; setTimeout(startGame, 1000);
@@ -403,14 +393,14 @@ window.addEventListener('resize', initMobileControls);
             renderer.render(scene, camera);
         }
 
-                function endGame() {
+        function endGame() {
             clearInterval(gameInterval); 
             clearInterval(dropInterval); 
             gameState = 'MENU';
             
             const lowestTop10Score = leaderboard.length < 10 ? 0 : leaderboard[leaderboard.length - 1].score;
             
-            // 랭킹 등록 조건: 노멀 모드(NORMAL)이면서, 점수가 0보다 크고, 탑10 안에 들었을 때만
+            // 랭킹 등록 조건 검증 (currentDifficulty 변수 매칭 완료)
             if (currentDifficulty === 'NORMAL' && score > 0 && (score > lowestTop10Score || leaderboard.length < 10)) {
                 setTimeout(() => {
                     let nick = prompt(`[GLOBAL TOP 10 ENTRY - NORMAL MODE]\nSCORE: ${score} PTS\nEnter your Nickname (max 10 chars):`, "Player");
@@ -434,7 +424,6 @@ window.addEventListener('resize', initMobileControls);
                     }
                 }, 400);
             } else { 
-                // 노멀 모드가 아니거나 랭킹 진입에 실패했을 때의 메시지 처리
                 let alertMsg = `MATCH OVER!\nFINAL SCORE: YOU ${score} - ${aiScore} AI`;
                 if (currentDifficulty !== 'NORMAL') {
                     alertMsg += `\n\n* Leaderboard entry is only available in NORMAL MODE.`;
@@ -443,7 +432,6 @@ window.addEventListener('resize', initMobileControls);
                 location.reload(); 
             }
         }
-
 
         gameLoop();
         window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
