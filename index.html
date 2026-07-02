@@ -2,62 +2,147 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>FRC 2026 REBUILT - 3D Match</title>
+    <title>FRC 2026 REBUILT - 3D Version</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #222; }
-        #gameCanvas { display: block; width: 100vw; height: 100vh; }
+        body { margin: 0; padding: 0; overflow: hidden; background-color: #222; color: #fff; font-family: sans-serif; }
+        #gameCanvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        
+        /* UI 레이어 (3D 캔버스 위에 덮어씌움) */
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); z-index: 10; }
+        .hidden { display: none !important; }
+        
+        .menu-box { background: #444; padding: 30px; border-radius: 10px; text-align: center; }
+        button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; background: #f1c40f; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #f39c12; }
+        
+        /* 인게임 HUD */
+        #hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; z-index: 5; text-shadow: 2px 2px 2px #000; pointer-events: none; }
+        
+        /* 로딩 텍스트 */
+        #loading-text { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; color: #f1c40f; z-index: 5; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+
+    <div id="main-menu" class="ui-layer">
+        <div class="menu-box">
+            <h1>FRC 2026: REBUILT</h1>
+            <p>1:1 3D 웹 게임 프로토타입</p>
+            <button onclick="startLoading()">게임 시작</button>
+        </div>
+    </div>
+
+    <div id="hud" class="hidden">
+        <div>TIME: <span id="time-display">135</span></div>
+        <div>SCORE: <span id="score-display">0</span></div>
+    </div>
+
+    <div id="loading-text" class="hidden">3D 모델 로딩 중...</div>
+
     <canvas id="gameCanvas"></canvas>
 
     <script>
-        // 1. 3D 씬(Scene), 카메라, 렌더러 기본 세팅
+        // --- 게임 상태 관리 ---
+        let gameState = 'MENU'; // MENU, LOADING, PLAYING
+        let timeLeft = 135;
+        let score = 0;
+        let gameInterval;
+
+        // --- Three.js 기본 세팅 ---
         const canvas = document.getElementById('gameCanvas');
         const scene = new THREE.Scene();
         
-        // 카메라 시점 (FRC 경기장 뷰에 맞게 나중에 조정 필요)
+        // 카메라 (살짝 위에서 내려다보는 뷰)
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 5, 10); // 약간 위에서 비스듬히 내려다보는 뷰
+        camera.position.set(0, 5, 10);
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
 
-        // 2. 조명(Lighting) 세팅 (3D 모델의 입체감을 위해 필수)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // 전체 기본 빛
-        scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // 특정 방향에서 오는 강한 빛
-        directionalLight.position.set(10, 20, 10);
-        scene.add(directionalLight);
+        // 조명 추가
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 10);
+        scene.add(dirLight);
 
-        // 3. 임시 로봇 (3D 큐브) 생성
-        // 기획안의 '실제와 비슷한 비율'을 가로 1, 높이 2, 깊이 1 비율로 가정
-        const geometry = new THREE.BoxGeometry(1, 2, 1); 
-        const material = new THREE.MeshLambertMaterial({ color: 0x3498db }); // 파란색 재질
-        
-        const tempRobot = new THREE.Mesh(geometry, material);
-        tempRobot.position.y = 1; // 바닥 위로 올려줌
-        scene.add(tempRobot);
+        // 바닥(경기장) 임시 추가
+        const floorGeo = new THREE.PlaneGeometry(20, 20);
+        const floorMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2; // 눕히기
+        scene.add(floor);
 
-        // 4. 게임 메인 루프 (렌더링)
+        // 플레이어 로봇 (임시 3D 큐브)
+        const robotGeo = new THREE.BoxGeometry(1, 2, 1);
+        const robotMat = new THREE.MeshLambertMaterial({ color: 0x3498db });
+        const playerRobot = new THREE.Mesh(robotGeo, robotMat);
+        playerRobot.position.y = 1;
+        scene.add(playerRobot);
+
+        // --- 키보드 입력 상태 저장 ---
+        const keys = { w: false, a: false, s: false, d: false };
+        window.addEventListener('keydown', (e) => { if(keys.hasOwnProperty(e.key)) keys[e.key] = true; });
+        window.addEventListener('keyup', (e) => { if(keys.hasOwnProperty(e.key)) keys[e.key] = false; });
+
+        // --- 로딩 시작 함수 (메뉴 -> 로딩) ---
+        function startLoading() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('loading-text').classList.remove('hidden');
+            gameState = 'LOADING';
+
+            // 3초 뒤에 로딩이 끝나고 게임 시작 (실제로는 여기서 3D 모델 파일 다운로드 진행)
+            setTimeout(() => {
+                startGame();
+            }, 3000);
+        }
+
+        // --- 게임 시작 함수 (로딩 -> 게임) ---
+        function startGame() {
+            document.getElementById('loading-text').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            
+            // 로딩 중 돌아간 로봇 방향 초기화
+            playerRobot.rotation.y = 0; 
+            gameState = 'PLAYING';
+
+            // 타이머 시작
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time-display').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(gameInterval);
+                    alert("게임 종료!");
+                    location.reload();
+                }
+            }, 1000);
+        }
+
+        // --- 메인 렌더링 루프 ---
         function gameLoop() {
             requestAnimationFrame(gameLoop);
-            
-            // 임시 로봇 애니메이션 (제대로 돌아가는지 테스트용 회전)
-            tempRobot.rotation.y += 0.01;
-            
-            // WASD 이동 로직이 들어갈 자리
-            // 예: tempRobot.position.z -= 0.1; 
+
+            if (gameState === 'LOADING') {
+                // 아이디어 주신 대로 로딩 중일 때는 큐브가 빙글빙글 돔
+                playerRobot.rotation.y += 0.05;
+                playerRobot.rotation.x += 0.02;
+            } 
+            else if (gameState === 'PLAYING') {
+                // 게임 중일 때는 WASD로 조종 가능
+                const speed = 0.1;
+                if (keys.w) playerRobot.position.z -= speed;
+                if (keys.s) playerRobot.position.z += speed;
+                if (keys.a) playerRobot.position.x -= speed;
+                if (keys.d) playerRobot.position.x += speed;
+            }
 
             renderer.render(scene, camera);
         }
-        
-        gameLoop();
 
-        // 화면 크기 변경 대응
+        gameLoop(); // 루프 실행
+
+        // 화면 리사이즈 대응
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
