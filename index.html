@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>FRC 2026 REBUILT - 1vs1 Match</title>
+    <title>FRC 2026 REBUILT - Horizontal 1vs1</title>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; background-color: #222; color: #fff; font-family: sans-serif; }
         #gameCanvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
@@ -10,13 +10,12 @@
         .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); z-index: 10; }
         .hidden { display: none !important; }
         
-        .menu-box { background: #444; padding: 30px; border-radius: 10px; text-align: center; border: 2px solid #3498db; }
+        .menu-box { background: #444; padding: 30px; border-radius: 10px; text-align: center; border: 2px solid #f1c40f; }
         button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; background: #f1c40f; border: none; border-radius: 5px; font-weight: bold; }
-        button:hover { background: #f39c12; }
         
         #hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; z-index: 5; text-shadow: 2px 2px 2px #000; pointer-events: none; }
-        .score-board { background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; }
-        #controls-guide { position: absolute; bottom: 10px; left: 10px; font-size: 14px; color: #aaa; z-index: 5; pointer-events: none; }
+        .score-board { background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 8px; border: 1px solid #555; }
+        #controls-guide { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #ccc; z-index: 5; pointer-events: none; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 10px; }
         #loading-text { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; color: #f1c40f; z-index: 5; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -26,19 +25,19 @@
     <div id="main-menu" class="ui-layer">
         <div class="menu-box">
             <h1>FRC 2026: REBUILT</h1>
-            <p>🔥 1:1 대결 모드 (Player vs AI) 🔥</p>
-            <button onclick="startLoading()">매치 시작</button>
+            <p>가로형 1:1 매치 및 포물선 발사 물리 구현</p>
+            <button onclick="startLoading()">게임 시작</button>
         </div>
     </div>
 
     <div id="hud" class="hidden">
-        <div class="score-board">⏱️ <span id="time-display">135</span>s</div>
-        <div class="score-board">🔵 님: <span id="ball-count">0/7</span> | 🔴 AI: <span id="ai-ball-count">0/7</span></div>
-        <div class="score-board">🎯 스코어 - P1: <span id="score-display" style="color:#3498db">0</span> vs AI: <span id="ai-score-display" style="color:#e74c3c">0</span></div>
+        <div class="score-board">⏱️ TIME: <span id="time-display">135</span>s</div>
+        <div class="score-board">🔵 PLAYER: <span id="ball-count">0/7</span> | 🔴 AI: <span id="ai-ball-count">0/7</span></div>
+        <div class="score-board">🎯 SCORE - BLUE: <span id="score-display" style="color:#3498db">0</span> vs RED: <span id="ai-score-display" style="color:#e74c3c">0</span></div>
     </div>
 
-    <div id="controls-guide" class="hidden">이동: WASD | 공 발사: Spacebar (북쪽 골대 타겟)</div>
-    <div id="loading-text" class="hidden">경기장 및 AI 세팅 중...</div>
+    <div id="controls-guide" class="hidden">이동: WASD | 공 발사: Spacebar (우측 RED 골대 조준, 사거리 확보 필요)</div>
+    <div id="loading-text" class="hidden">FRC 규격 경기장 빌드 중...</div>
 
     <canvas id="gameCanvas"></canvas>
 
@@ -47,77 +46,71 @@
         let timeLeft = 135;
         let totalDroppedCycles = 0; 
         
-        // 플레이어 상태
-        let score = 0;
-        let ballCount = 0; 
-
-        // AI 봇 상태
-        let aiScore = 0;
-        let aiBallCount = 0;
-        let aiShootCooldown = 0; // 발사 딜레이
+        let score = 0, ballCount = 0; 
+        let aiScore = 0, aiBallCount = 0, aiShootCooldown = 0;
         
         let gameInterval, dropInterval;
         let fieldBalls = [];  
         let activeBullets = []; 
+        const GRAVITY = 0.015; // 포물선용 중력 상수
 
         // --- Three.js 세팅 ---
         const canvas = document.getElementById('gameCanvas');
         const scene = new THREE.Scene();
         
-        // 1:1 경기장이 다 보이도록 카메라 뷰 세팅
-        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 15, 16);
-        camera.lookAt(0, 0, 0);
+        // 가로형 경기장을 비스듬히 중계 뷰로 바라보는 카메라
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 16, 18);
+        camera.lookAt(0, -1, 0);
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-        dirLight.position.set(5, 15, 5);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(0, 20, 10);
         scene.add(dirLight);
 
-        // 1. 경기장 바닥 (센터 라인 추가)
-        const floorGeo = new THREE.PlaneGeometry(16, 20);
-        const floorMat = new THREE.MeshLambertMaterial({ color: 0x2c3e50 });
+        // 1. 가로형 경기장 바닥 (가로 26, 세로 14 표준 비율 근사치)
+        const floorGeo = new THREE.PlaneGeometry(26, 14);
+        const floorMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
         
-        const centerLineGeo = new THREE.PlaneGeometry(16, 0.2);
-        const centerLineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const centerLine = new THREE.Mesh(centerLineGeo, centerLineMat);
+        // 센터 라인 (가로 경기장 분할)
+        const centerLine = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 14), new THREE.MeshBasicMaterial({ color: 0xffffff }));
         centerLine.rotation.x = -Math.PI / 2;
-        centerLine.position.y = 0.01; // 바닥보다 살짝 위
+        centerLine.position.set(0, 0.01, 0);
         scene.add(centerLine);
 
-        // 2. 플레이어 진영 골대 (북쪽 - 녹색)
-        const playerGoalGeo = new THREE.BoxGeometry(4, 2.5, 1);
-        const playerGoalMat = new THREE.MeshLambertMaterial({ color: 0x2ecc71 }); 
-        const playerGoal = new THREE.Mesh(playerGoalGeo, playerGoalMat);
-        playerGoal.position.set(0, 1.25, -9); 
-        scene.add(playerGoal);
+        // 2. 임시 골대 구조물 (좌/우 배치)
+        const goalGeo = new THREE.BoxGeometry(1.5, 3, 4);
+        
+        // BLUE 얼라이언스 골대 (왼쪽 끝 - 플레이어가 맞춰야 하는 타겟은 반대편 우측 RED 골대)
+        const blueGoal = new THREE.Mesh(goalGeo, new THREE.MeshLambertMaterial({ color: 0x3498db }));
+        blueGoal.position.set(-12.5, 1.5, 0);
+        scene.add(blueGoal);
 
-        // 3. AI 진영 골대 (남쪽 - 보라색)
-        const aiGoalMat = new THREE.MeshLambertMaterial({ color: 0x9b59b6 }); 
-        const aiGoal = new THREE.Mesh(playerGoalGeo, aiGoalMat);
-        aiGoal.position.set(0, 1.25, 9); 
-        scene.add(aiGoal);
+        // RED 얼라이언스 골대 (오른쪽 끝 - AI가 맞춰야 하는 타겟은 좌측 BLUE 골대)
+        const redGoal = new THREE.Mesh(goalGeo, new THREE.MeshLambertMaterial({ color: 0xe74c3c }));
+        redGoal.position.set(12.5, 1.5, 0);
+        scene.add(redGoal);
 
-        // 4. 로봇 세팅
+        // 3. 로봇 세팅
         const robotGeo = new THREE.BoxGeometry(1.2, 1, 1.2);
         
-        // 플레이어 (파란색, 남쪽에서 시작)
-        const playerRobot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0x3498db }));
-        playerRobot.position.set(0, 0.5, 5); 
+        // 플레이어 로봇 (왼쪽 진영 스타트)
+        const playerRobot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0x2980b9 }));
+        playerRobot.position.set(-6, 0.5, 0); 
         scene.add(playerRobot);
 
-        // AI 봇 (빨간색, 북쪽에서 시작)
-        const aiRobot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0xe74c3c }));
-        aiRobot.position.set(0, 0.5, -5); 
+        // AI 로봇 (오른쪽 진영 스타트)
+        const aiRobot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0xc0392b }));
+        aiRobot.position.set(6, 0.5, 0); 
         scene.add(aiRobot);
 
-        // --- 키보드 입력 ---
+        // --- 키보드 제어 ---
         const keys = { w: false, a: false, s: false, d: false };
         window.addEventListener('keydown', (e) => { 
             if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; 
@@ -138,9 +131,6 @@
             document.getElementById('loading-text').classList.add('hidden');
             document.getElementById('hud').classList.remove('hidden');
             document.getElementById('controls-guide').classList.remove('hidden');
-            
-            playerRobot.rotation.set(0,0,0);
-            aiRobot.rotation.set(0,0,0);
             gameState = 'PLAYING';
 
             gameInterval = setInterval(() => {
@@ -155,7 +145,7 @@
             }, 12000);
         }
 
-        // 공 투하 (양쪽 진영에 공평하게 랜덤 투하)
+        // 중앙 영역 위주로 공 투하
         function dropBalls() {
             totalDroppedCycles++;
             const ballGeo = new THREE.SphereGeometry(0.25, 16, 16);
@@ -164,145 +154,137 @@
             for(let i=0; i<10; i++) {
                 const ball = new THREE.Mesh(ballGeo, ballMat);
                 ball.position.set(
-                    (Math.random() - 0.5) * 12,
+                    (Math.random() - 0.5) * 10, // 가로 중앙 기준
                     6 + Math.random() * 2, 
-                    (Math.random() - 0.5) * 14 // 맵 전체에 뿌려짐
+                    (Math.random() - 0.5) * 10
                 );
                 scene.add(ball);
                 fieldBalls.push(ball);
             }
         }
 
-        // 공 발사 (주체에 따라 타겟 골대가 다름)
+        // --- 물리 적용 포물선 발사 로직 ---
         function shootBall(shooter) {
-            let startPos, targetPos, color;
+            let startPos, targetGoalPos, owner;
 
             if (shooter === 'PLAYER') {
                 if (ballCount <= 0) return; 
                 ballCount--;
                 document.getElementById('ball-count').innerText = `${ballCount}/7`;
                 startPos = playerRobot.position;
-                targetPos = new THREE.Vector3(0, 2.0, -9); // 녹색 골대 (북쪽)
-                color = 0x3498db; // 파란 궤적
+                targetGoalPos = new THREE.Vector3(12.5, 2.5, 0); // 상대방 골대 조준 (오른쪽)
+                owner = 'PLAYER';
             } else {
                 if (aiBallCount <= 0) return;
                 aiBallCount--;
                 document.getElementById('ai-ball-count').innerText = `${aiBallCount}/7`;
                 startPos = aiRobot.position;
-                targetPos = new THREE.Vector3(0, 2.0, 9); // 보라색 골대 (남쪽)
-                color = 0xe74c3c; // 빨간 궤적
+                targetGoalPos = new THREE.Vector3(-12.5, 2.5, 0); // 상대방 골대 조준 (왼쪽)
+                owner = 'AI';
             }
 
             const bullet = new THREE.Mesh(
                 new THREE.SphereGeometry(0.25, 16, 16),
-                new THREE.MeshLambertMaterial({ color: color })
+                new THREE.MeshLambertMaterial({ color: shooter === 'PLAYER' ? 0x3498db : 0xe74c3c })
             );
-            
             bullet.position.copy(startPos);
-            bullet.position.y = 1.2; 
+            bullet.position.y = 1.0; 
             scene.add(bullet);
 
-            const direction = new THREE.Vector3().subVectors(targetPos, bullet.position).normalize();
-            activeBullets.push({ mesh: bullet, dir: direction, speed: 0.35, owner: shooter });
+            // 거리 계산을 통한 고정 포물선 속도 벡타 계산
+            const distanceX = targetGoalPos.x - startPos.x;
+            const distanceZ = targetGoalPos.z - startPos.z;
+            
+            // 수평 이동 소요 프레임 설정 (거리에 비례하도록)
+            const travelFrames = Math.abs(distanceX) * 3.5; 
+            
+            const vx = distanceX / travelFrames;
+            const vz = distanceZ / travelFrames;
+            // 중력을 거슬러 솟구쳤다 떨어지게 만드는 Y축 초기 속도 수식
+            const vy = (targetGoalPos.y - startPos.y) / travelFrames + 0.5 * GRAVITY * travelFrames;
+
+            activeBullets.push({
+                mesh: bullet,
+                velocity: new THREE.Vector3(vx, vy, vz),
+                targetPos: targetGoalPos,
+                owner: owner
+            });
         }
 
-        // 메인 게임 루프
         function gameLoop() {
             requestAnimationFrame(gameLoop);
 
-            if (gameState === 'LOADING') {
-                playerRobot.rotation.y += 0.05;
-                aiRobot.rotation.y -= 0.05;
-            } 
-            else if (gameState === 'PLAYING') {
-                
-                // 1. 플레이어 이동
-                const speed = 0.12;
-                if (keys.w && playerRobot.position.z > -9) playerRobot.position.z -= speed;
-                if (keys.s && playerRobot.position.z < 9)  playerRobot.position.z += speed;
-                if (keys.a && playerRobot.position.x > -7) playerRobot.position.x -= speed;
-                if (keys.d && playerRobot.position.x < 7)  playerRobot.position.x += speed;
+            if (gameState === 'PLAYING') {
+                // 1. 가로형 맵 제한 플레이어 이동
+                const speed = 0.15;
+                if (keys.w && playerRobot.position.z > -6.5) playerRobot.position.z -= speed;
+                if (keys.s && playerRobot.position.z < 6.5)  playerRobot.position.z += speed;
+                if (keys.a && playerRobot.position.x > -11.5) playerRobot.position.x -= speed;
+                if (keys.d && playerRobot.position.x < 11.5) playerRobot.position.x += speed;
 
-                // 2. AI 봇 로직 (공 쫓아가기 & 슛)
+                // 2. AI 봇 인공지능 (가까운 공 탐색 및 조건부 사거리 슈팅)
                 if (aiShootCooldown > 0) aiShootCooldown--;
 
-                if (aiBallCount < 7 && fieldBalls.length > 0 && aiShootCooldown <= 0) {
-                    // 가장 가까운 공 찾기
+                if (aiBallCount < 7 && fieldBalls.length > 0) {
                     let targetBall = fieldBalls[0];
                     let minDist = aiRobot.position.distanceTo(targetBall.position);
                     for (let i = 1; i < fieldBalls.length; i++) {
                         let dist = aiRobot.position.distanceTo(fieldBalls[i].position);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            targetBall = fieldBalls[i];
-                        }
+                        if (dist < minDist) { minDist = dist; targetBall = fieldBalls[i]; }
                     }
-                    
-                    // 공을 향해 이동 (y축은 무시)
                     const moveDir = new THREE.Vector3().subVectors(targetBall.position, aiRobot.position);
                     moveDir.y = 0; 
                     if (moveDir.length() > 0.1) {
                         moveDir.normalize();
-                        aiRobot.position.addScaledVector(moveDir, 0.08); // AI 이동속도 (플레이어보다 약간 느림)
+                        aiRobot.position.addScaledVector(moveDir, 0.09);
                     }
-                } 
-                // 공을 먹었거나 필드에 공이 없으면 슛
-                else if (aiBallCount > 0 && aiShootCooldown <= 0) {
+                } else if (aiBallCount > 0 && aiShootCooldown <= 0) {
+                    // 사거리가 너무 가깝거나 멀지 않을 때 슛 폭발 확률 상승 시뮬레이션
                     shootBall('AI');
-                    aiShootCooldown = 45; // 45프레임 (약 0.7초) 대기 후 다음 슛
+                    aiShootCooldown = 50; 
                 }
 
-                // 3. 필드 공 중력 및 로봇 수집(충돌) 처리
+                // 3. 공 수집
                 for (let i = fieldBalls.length - 1; i >= 0; i--) {
                     const ball = fieldBalls[i];
                     if (ball.position.y > 0.25) ball.position.y -= 0.1; 
 
-                    // 플레이어 수집 체크
                     if (playerRobot.position.distanceTo(ball.position) < 1.1 && ballCount < 7) { 
-                        scene.remove(ball);
-                        fieldBalls.splice(i, 1);
-                        ballCount++;
+                        scene.remove(ball); fieldBalls.splice(i, 1); ballCount++;
                         document.getElementById('ball-count').innerText = `${ballCount}/7`;
-                        continue; // 이미 먹은 공은 AI가 못 먹게 넘김
+                        continue;
                     }
-
-                    // AI 수집 체크
                     if (aiRobot.position.distanceTo(ball.position) < 1.1 && aiBallCount < 7) { 
-                        scene.remove(ball);
-                        fieldBalls.splice(i, 1);
-                        aiBallCount++;
+                        scene.remove(ball); fieldBalls.splice(i, 1); aiBallCount++;
                         document.getElementById('ai-ball-count').innerText = `${aiBallCount}/7`;
                     }
                 }
 
-                // 4. 날아가는 공 처리 및 스코어 판정
+                // 4. 포물선 날아가기 및 실제 과녁 도달 판정
                 for (let i = activeBullets.length - 1; i >= 0; i--) {
                     const bullet = activeBullets[i];
-                    bullet.mesh.position.addScaledVector(bullet.dir, bullet.speed);
+                    
+                    // 위치에 가속도(물리 벡터) 더하기
+                    bullet.mesh.position.add(bullet.velocity);
+                    // Y축 속도에 중력 차감하여 아래로 꺾이게 만듦
+                    bullet.velocity.y -= GRAVITY;
 
-                    // 플레이어가 쏜 공 -> 북쪽 골대
-                    if (bullet.owner === 'PLAYER') {
-                        if (bullet.mesh.position.distanceTo(new THREE.Vector3(0, 2.0, -9)) < 2.0) {
-                            score++;
-                            document.getElementById('score-display').innerText = score;
-                            scene.remove(bullet.mesh);
-                            activeBullets.splice(i, 1);
-                        } else if (bullet.mesh.position.z < -12) {
-                            scene.remove(bullet.mesh);
-                            activeBullets.splice(i, 1);
+                    // 골대 구조물 상단 히트박스 판정
+                    const distToGoal = bullet.mesh.position.distanceTo(bullet.targetPos);
+                    
+                    if (distToGoal < 1.8) { // 골대 정밀 유효 반경 충돌 시 득점
+                        if (bullet.owner === 'PLAYER') {
+                            score++; document.getElementById('score-display').innerText = score;
+                        } else {
+                            aiScore++; document.getElementById('ai-score-display').innerText = aiScore;
                         }
+                        scene.remove(bullet.mesh);
+                        activeBullets.splice(i, 1);
                     } 
-                    // AI가 쏜 공 -> 남쪽 골대
-                    else if (bullet.owner === 'AI') {
-                        if (bullet.mesh.position.distanceTo(new THREE.Vector3(0, 2.0, 9)) < 2.0) {
-                            aiScore++;
-                            document.getElementById('ai-score-display').innerText = aiScore;
-                            scene.remove(bullet.mesh);
-                            activeBullets.splice(i, 1);
-                        } else if (bullet.mesh.position.z > 12) {
-                            scene.remove(bullet.mesh);
-                            activeBullets.splice(i, 1);
-                        }
+                    // 바닥이나 맵 밖으로 떨어지면 노골 처리 후 소멸
+                    else if (bullet.mesh.position.y < 0.1 || Math.abs(bullet.mesh.position.x) > 15) {
+                        scene.remove(bullet.mesh);
+                        activeBullets.splice(i, 1);
                     }
                 }
             }
@@ -311,12 +293,9 @@
         }
 
         function endGame() {
-            clearInterval(gameInterval);
-            clearInterval(dropInterval);
+            clearInterval(gameInterval); clearInterval(dropInterval);
             gameState = 'MENU';
-            
-            let resultMsg = score > aiScore ? "🎉 승리하셨습니다!" : (score < aiScore ? "💀 패배..." : "🤝 무승부!");
-            alert(`경기 종료!\n플레이어: ${score}점 vs AI: ${aiScore}점\n${resultMsg}`);
+            alert(`경기 종료!\n최종 점수 - PLAYER: ${score}점 | AI: ${aiScore}점`);
             location.reload();
         }
 
