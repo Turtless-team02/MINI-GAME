@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>FRC 2026 REBUILT - 3D Match</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #222; }
+        #gameCanvas { display: block; width: 100vw; height: 100vh; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        // 1. 3D 씬(Scene), 카메라, 렌더러 기본 세팅
+        const canvas = document.getElementById('gameCanvas');
+        const scene = new THREE.Scene();
+        
+        // 카메라 시점 (FRC 경기장 뷰에 맞게 나중에 조정 필요)
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 10); // 약간 위에서 비스듬히 내려다보는 뷰
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // 2. 조명(Lighting) 세팅 (3D 모델의 입체감을 위해 필수)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // 전체 기본 빛
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // 특정 방향에서 오는 강한 빛
+        directionalLight.position.set(10, 20, 10);
+        scene.add(directionalLight);
+
+        // 3. 임시 로봇 (3D 큐브) 생성
+        // 기획안의 '실제와 비슷한 비율'을 가로 1, 높이 2, 깊이 1 비율로 가정
+        const geometry = new THREE.BoxGeometry(1, 2, 1); 
+        const material = new THREE.MeshLambertMaterial({ color: 0x3498db }); // 파란색 재질
+        
+        const tempRobot = new THREE.Mesh(geometry, material);
+        tempRobot.position.y = 1; // 바닥 위로 올려줌
+        scene.add(tempRobot);
+
+        // 4. 게임 메인 루프 (렌더링)
+        function gameLoop() {
+            requestAnimationFrame(gameLoop);
+            
+            // 임시 로봇 애니메이션 (제대로 돌아가는지 테스트용 회전)
+            tempRobot.rotation.y += 0.01;
+            
+            // WASD 이동 로직이 들어갈 자리
+            // 예: tempRobot.position.z -= 0.1; 
+
+            renderer.render(scene, camera);
+        }
+        
+        gameLoop();
+
+        // 화면 크기 변경 대응
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
