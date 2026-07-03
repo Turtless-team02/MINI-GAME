@@ -24,16 +24,16 @@
         .menu-box p { color: #94a3b8; font-size: 13px; letter-spacing: 1.5px; margin: 0 0 35px 0; }
 
         /* 랭킹 박스 디자인 */
-        .ranking-box { background: rgba(15, 22, 36, 0.6); padding: 30px; border-radius: 14px; border: 1px solid rgba(241, 196, 15, 0.2); flex: 1; min-width: 320px; max-height: 380px; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .ranking-box { background: rgba(15, 22, 36, 0.6); padding: 30px; border-radius: 14px; border: 1px solid rgba(174, 25, 50, 0.2); flex: 1; min-width: 320px; max-height: 380px; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .ranking-box::-webkit-scrollbar { width: 6px; }
         .ranking-box::-webkit-scrollbar-track { background: transparent; }
-        .ranking-box::-webkit-scrollbar-thumb { background: rgba(241, 196, 15, 0.3); border-radius: 3px; }
+        .ranking-box::-webkit-scrollbar-thumb { background: rgba(174, 25, 50, 0.3); border-radius: 3px; }
         
-        .ranking-title { color: #f1c40f; font-size: 18px; font-weight: 700; margin: 0 0 20px 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(241, 196, 15, 0.15); padding-bottom: 12px; }
+        .ranking-title { color: #ae1932; font-size: 18px; font-weight: 700; margin: 0 0 20px 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(174, 25, 50, 0.15); padding-bottom: 12px; }
         .rank-list { list-style: none; padding: 0; margin: 0; }
         .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 14px; color: #e2e8f0; }
-        .rank-item.top3 { font-weight: 700; background: rgba(241, 196, 15, 0.03); border-radius: 6px; }
-        .rank-item:nth-child(1) .rank-num { color: #f59e0b; }
+        .rank-item.top3 { font-weight: 700; background: rgba(174, 25, 50, 0.03); border-radius: 6px; }
+        .rank-item:nth-child(1) .rank-num { color: #ae1932; }
         .rank-item:nth-child(2) .rank-num { color: #94a3b8; }
         .rank-item:nth-child(3) .rank-num { color: #b45309; }
         .loading-text-small { text-align: center; color: #64748b; font-size: 13px; padding: 30px 0; }
@@ -43,7 +43,7 @@
         button { padding: 14px 20px; font-size: 14px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; font-weight: 700; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; color: #94a3b8; background: rgba(255,255,255,0.02); transition: all 0.2s ease; }
         
         .btn-easy:hover { background: rgba(46, 204, 113, 0.1); border-color: #2ecc71; color: #2ecc71; }
-        .btn-normal:hover { background: rgba(241, 196, 15, 0.1); border-color: #f1c40f; color: #f1c40f; }
+        .btn-normal:hover { background: rgba(174, 25, 50, 0.1); border-color: #ae1932; color: #ae1932; }
         .btn-hard:hover { background: rgba(231, 76, 60, 0.1); border-color: #e74c3c; color: #e74c3c; }
         button:active { transform: translateY(1px); }
         
@@ -56,7 +56,7 @@
         
         .score-blue { color: #38bdf8; font-size: 24px; font-weight: 900; }
         .score-red { color: #f87171; font-size: 24px; font-weight: 900; }
-        .timer-val { color: #f1c40f; font-size: 18px; }
+        .timer-val { color: #ae1932; font-size: 18px; }
         .timer-danger { color: #ef4444; animation: pulse-text 0.5s infinite alternate; }
         @keyframes pulse-text { from { opacity: 0.6; } to { opacity: 1; } }
 
@@ -73,10 +73,10 @@
             box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
         }
 
-        /* 공이 채워졌을 때 (입체감 있는 노란 구체 느낌) */
+        /* 공이 채워졌을 때 */
         .ball-slot.filled { 
-            background: #f1c40f; border-color: #fff; 
-            box-shadow: 0 0 12px #f1c40f, inset -2px -2px 4px rgba(0,0,0,0.3); 
+            background: #ae1932; border-color: #fff; 
+            box-shadow: 0 0 12px #ae1932, inset -2px -2px 4px rgba(0,0,0,0.3); 
             transform: scale(1.1); 
         }
 
@@ -85,7 +85,7 @@
         #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; pointer-events: auto; opacity: 0.8; }
         
         #btn-shoot { position: absolute; bottom: 50px; right: 50px; width: 85px; height: 85px; border-radius: 50%; background: rgba(22, 30, 49, 0.8); border: 2px solid rgba(255,255,255,0.15); color: #fff; font-size: 14px; font-weight: 700; pointer-events: auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: all 0.1s; letter-spacing: 1px; }
-        #btn-shoot:active { transform: scale(0.92); border-color: #f1c40f; color: #f1c40f; }
+        #btn-shoot:active { transform: scale(0.92); border-color: #ae1932; color: #ae1932; }
         
         #loading-text { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: 700; color: #94a3b8; z-index: 5; letter-spacing: 4px; }
 
@@ -208,14 +208,14 @@
         // ==========================================
         let gameState = 'MENU', timeLeft = 135, totalDroppedCycles = 0; 
         let score = 0, ballCount = 0, aiScore = 0, aiBallCount = 0, aiShootCooldown = 0;
-        let currentDifficulty = 'NORMAL'; // 전역 변수 안전하게 선언 완료
+        let currentDifficulty = 'NORMAL'; 
         
         const aiStats = { 'EASY': { speed: 0.05, shootDelay: 80, errorMargin: 4.0 }, 'NORMAL': { speed: 0.09, shootDelay: 50, errorMargin: 1.5 }, 'HARD': { speed: 0.14, shootDelay: 30, errorMargin: 0.3 } };
         let activeAiConfig = aiStats['NORMAL'];
         let gameInterval, dropInterval;
         let fieldBalls = [], activeBullets = []; 
         const GRAVITY = 0.015; 
-        const GLOBAL_YELLOW_MAT = new THREE.MeshLambertMaterial({ color: 0xf1c40f });
+        const GLOBAL_YELLOW_MAT = new THREE.MeshLambertMaterial({ color: 0xae1932 });
 
         function createSlots(containerId) {
             const container = document.getElementById(containerId);
@@ -275,7 +275,7 @@
                         zone: document.getElementById('joystick-zone'), 
                         mode: 'static', 
                         position: { left: '50%', top: '50%' }, 
-                        color: '#f1c40f' 
+                        color: '#ae1932' 
                     });
                     joystickManager.on('move', (evt, data) => { 
                         const force = Math.min(data.force, 1); 
@@ -377,7 +377,7 @@
                     }
                 }
 
-                                // 발사된 공(activeBullets) 이동 및 물리(바운스) 처리
+                // 발사된 공(activeBullets) 이동 및 물리(바운스) 처리
                 for (let i = activeBullets.length - 1; i >= 0; i--) {
                     const bullet = activeBullets[i];
                     bullet.mesh.position.add(bullet.velocity); 
