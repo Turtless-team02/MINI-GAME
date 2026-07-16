@@ -238,7 +238,7 @@
         let score = 0, ballCount = 0, aiScore = 0, aiBallCount = 0, aiShootCooldown = 0;
         let currentDifficulty = 'NORMAL'; 
         
-        const aiStats = { 'EASY': { speed: 0.05, shootDelay: 80, errorMargin: 4.0 }, 'NORMAL': { speed: 0.09, shootDelay: 50, errorMargin: 1.5 }, 'HARD': { speed: 0.14, shootDelay: 30, errorMargin: 0.3 } };
+        const aiStats = { 'EASY': { speed: 0.05, shootDelay: 80, errorMargin: 3.5 }, 'NORMAL': { speed: 0.09, shootDelay: 50, errorMargin: 1.4 }, 'HARD': { speed: 0.14, shootDelay: 30, errorMargin: 0.3 } };
         let activeAiConfig = aiStats['NORMAL'];
         let gameInterval, dropInterval;
         let fieldBalls = [], activeBullets = []; 
@@ -295,34 +295,34 @@
             const polycarbMat = new THREE.MeshPhysicalMaterial({ 
                 color: 0x8cc4ff, 
                 transparent: true, 
-                opacity: 0.4, 
+                opacity: 0.35, 
                 roughness: 0.1, 
                 transmission: 0.9, 
                 thickness: 0.5 
             }); // COLOR_POLYCARB
 
-            // 1. 하부 경사 범퍼 플레이트 (cube[60, 90, 30] 스케일 변환)
+            // 1. 하부 경사 범퍼 플레이트
             const basePlatform = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 1.8), teamMat);
             basePlatform.position.y = 0.3;
             goalGroup.add(basePlatform);
 
             const rampSlope = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.2, 1.2), teamMat);
-            rampSlope.rotation.x = 0.26; // 15도 앞쪽 경사
+            rampSlope.rotation.x = 0.26;
             rampSlope.position.set(0, 0.1, -0.6);
             goalGroup.add(rampSlope);
 
-            // 2. 검은색 중앙 기둥 지지 구조물 (cube[50, 50, 70])
+            // 2. 검은색 중앙 기둥 지지 구조물
             const coreColumn = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.4, 1.0), darkBaseMat);
             coreColumn.position.y = 1.3;
             goalGroup.add(coreColumn);
 
-            // 3. 골대 입구 플레이트 베이스 (cube[54, 54, 4])
+            // 3. 골대 입구 플레이트 베이스
             const metalPlate = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.08, 1.1), metalMat);
             metalPlate.position.y = 2.0;
             goalGroup.add(metalPlate);
 
             // 4. 사방 지지대 메탈 실린더 기둥 4개
-            const rodGeo = new THREE.CylinderGeometry(0.06, 0.06, 1.4, 8);
+            const rodGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.4, 8); // 충돌 최소화를 위해 굵기를 더 가늘게(0.06 -> 0.04)
             const rodPositions = [
                 [0.48, 0.48], [-0.48, 0.48], [0.48, -0.48], [-0.48, -0.48]
             ];
@@ -332,15 +332,15 @@
                 goalGroup.add(rod);
             });
 
-            // 5. 상부 메탈 깔때기 (cylinder h=30, r1=25, r2=42)
+            // 5. 상부 메탈 깔때기
             const funnelMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 0.8, 0.8, 16, 1, true), metalMat);
             funnelMesh.position.y = 2.6;
             goalGroup.add(funnelMesh);
 
-            // 6. 폴리카보네이트 투명 백보드 (cube[55, 4, 50] / rotate[10, 0, 0])
+            // 6. 폴리카보네이트 투명 백보드 (눈을 즐겁게 하되, 공은 수평 통과하도록 충돌 간소화)
             const backboard = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.0, 0.08), polycarbMat);
             backboard.position.set(0, 2.7, 0.6);
-            backboard.rotation.x = 0.17; // 10도 경사
+            backboard.rotation.x = 0.17;
             goalGroup.add(backboard);
 
             return goalGroup;
@@ -537,11 +537,12 @@
             let startPos, targetGoalPos, owner, spreadX = 0, spreadZ = 0; 
             if (shooter === 'PLAYER') {
                 if (ballCount <= 0) return; ballCount--; updateSlots('player-slots', ballCount); 
-                startPos = playerRobot.position; targetGoalPos = new THREE.Vector3(12.5, 3.0, 0); owner = 'PLAYER';
-                spreadX = (Math.random() - 0.5) * 0.8; spreadZ = (Math.random() - 0.5) * 0.8;
+                startPos = playerRobot.position; targetGoalPos = new THREE.Vector3(12.5, 3.2, 0); owner = 'PLAYER';
+                // 조준 궤적 안전성 증가 (조준 난이도 완화)
+                spreadX = (Math.random() - 0.5) * 0.4; spreadZ = (Math.random() - 0.5) * 0.4;
             } else {
                 if (aiBallCount <= 0) return; aiBallCount--; updateSlots('ai-slots', aiBallCount);
-                startPos = aiRobot.position; targetGoalPos = new THREE.Vector3(-12.5, 3.0, 0); owner = 'AI';
+                startPos = aiRobot.position; targetGoalPos = new THREE.Vector3(-12.5, 3.2, 0); owner = 'AI';
                 spreadX = (Math.random() - 0.5) * activeAiConfig.errorMargin; spreadZ = (Math.random() - 0.5) * activeAiConfig.errorMargin;
             }
 
@@ -554,10 +555,12 @@
             activeBullets.push({ mesh: bullet, velocity: new THREE.Vector3(vx, vy, vz), targetPos: targetGoalPos, owner: owner });
         }
 
-        // 충돌 물리 판정 정교화 상수
-        const GOAL_Y_TOP = 2.8;       
-        const GOAL_RADIUS = 1.3;     
-        const GOAL_CYL_RADIUS = 0.8; 
+        // ==========================================
+        // [골인 밸런스 패치 및 판정 튜닝]
+        // ==========================================
+        const GOAL_Y_TOP = 2.6;       // 판정 고도 하향 (공이 골대 주변에 더 쉽게 진입하도록)
+        const GOAL_RADIUS = 1.8;      // 골인 허용 반경 대폭 상향 (1.3 -> 1.8 자석 효과 제공)
+        const GOAL_CYL_RADIUS = 0.65; // 기둥 충돌 반경 축소 (0.8 -> 0.65 기둥 튕김 억제)
 
         function gameLoop() {
             requestAnimationFrame(gameLoop);
@@ -608,7 +611,7 @@
                     const dz = bullet.mesh.position.z - targetGoalZ;
                     const horizontalDist = Math.sqrt(dx*dx + dz*dz);
 
-                    // [판정 1] 골대 위쪽 구멍 득점
+                    // [판정 1] 골대 위쪽 구멍 득점 (자석 반경 적용)
                     if (prevY >= GOAL_Y_TOP && currY <= GOAL_Y_TOP) {
                         if (horizontalDist <= GOAL_RADIUS) {
                             if (bullet.owner === 'PLAYER') { 
@@ -624,7 +627,7 @@
                         }
                     }
 
-                    // [판정 2] 옆면 기둥 충돌 바운스
+                    // [판정 2] 옆면 기둥 충돌 바운스 (탄성 감쇠 적용)
                     if (currY < GOAL_Y_TOP && currY > 0.25) {
                         if (horizontalDist < GOAL_CYL_RADIUS) {
                             const angle = Math.atan2(dz, dx);
@@ -635,10 +638,11 @@
                             bullet.mesh.position.z = targetGoalZ + normalZ * GOAL_CYL_RADIUS;
 
                             const dotProduct = bullet.velocity.x * normalX + bullet.velocity.z * normalZ;
-                            bullet.velocity.x -= 2 * dotProduct * normalX * 0.6;
-                            bullet.velocity.z -= 2 * dotProduct * normalZ * 0.6;
+                            // 반사 각도 속도를 0.6 -> 0.45로 줄여서 부딪힐 때 가볍게 흐르도록 감쇠 패치
+                            bullet.velocity.x -= 2 * dotProduct * normalX * 0.45;
+                            bullet.velocity.z -= 2 * dotProduct * normalZ * 0.45;
                             
-                            bullet.velocity.y = Math.abs(bullet.velocity.y) * 0.5; 
+                            bullet.velocity.y = Math.abs(bullet.velocity.y) * 0.35; 
                         }
                     }
 
