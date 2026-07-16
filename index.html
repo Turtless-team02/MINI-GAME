@@ -19,13 +19,22 @@
         .menu-container { display: flex; gap: 24px; align-items: stretch; max-width: 950px; width: 92%; flex-wrap: wrap; justify-content: center; }
         
         /* 메뉴 박스 디자인 */
-        .menu-box { background: rgba(25, 12, 15, 0.6); padding: 45px 40px; border-radius: 14px; text-align: center; border: 1px solid rgba(174, 25, 50, 0.25); box-shadow: 0 15px 40px rgba(174, 25, 50, 0.15), inset 0 0 20px rgba(174, 25, 50, 0.05); flex: 1; min-width: 320px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+        .menu-box { background: rgba(25, 12, 15, 0.6); padding: 35px 30px; border-radius: 14px; text-align: center; border: 1px solid rgba(174, 25, 50, 0.25); box-shadow: 0 15px 40px rgba(174, 25, 50, 0.15), inset 0 0 20px rgba(174, 25, 50, 0.05); flex: 1.2; min-width: 320px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
         .menu-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #ae1932, transparent); }
-        .menu-box h1 { margin: 0 0 10px 0; font-size: 38px; font-weight: 900; letter-spacing: 4px; background: linear-gradient(135deg, #ffffff 0%, #ae1932 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 10px rgba(174,25,50,0.4)); }
-        .menu-box p { color: #cbd5e1; font-size: 13px; letter-spacing: 2px; margin: 0 0 35px 0; }
+        .menu-box h1 { margin: 0 0 5px 0; font-size: 32px; font-weight: 900; letter-spacing: 3px; background: linear-gradient(135deg, #ffffff 0%, #ae1932 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 10px rgba(174,25,50,0.4)); }
+        .menu-box p { color: #cbd5e1; font-size: 11px; letter-spacing: 2px; margin: 0 0 20px 0; }
+
+        /* 로봇 선택 영역 */
+        .robot-select-title { font-size: 12px; color: #ff4d6d; letter-spacing: 2px; margin-bottom: 10px; font-weight: 700; text-transform: uppercase; text-shadow: 0 0 8px rgba(255,77,109,0.4); }
+        .robot-options { display: flex; gap: 10px; margin-bottom: 25px; justify-content: center; }
+        .robot-btn { padding: 12px 10px; font-size: 11px; flex: 1; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); border-radius: 6px; cursor: pointer; color: #94a3b8; transition: all 0.2s; }
+        .robot-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .robot-btn.active[data-robot="TURRET"] { border-color: #2ecc71; color: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.3); background: rgba(46, 204, 113, 0.05); }
+        .robot-btn.active[data-robot="DUMPER"] { border-color: #e67e22; color: #e67e22; box-shadow: 0 0 10px rgba(230, 126, 34, 0.3); background: rgba(230, 126, 34, 0.05); }
+        .robot-btn.active[data-robot="CLIMBER"] { border-color: #9b59b6; color: #9b59b6; box-shadow: 0 0 10px rgba(155, 89, 182, 0.3); background: rgba(155, 89, 182, 0.05); }
 
         /* 랭킹 박스 디자인 */
-        .ranking-box { background: rgba(20, 10, 12, 0.7); padding: 30px; border-radius: 14px; border: 1px solid rgba(174, 25, 50, 0.3); flex: 1; min-width: 320px; max-height: 380px; overflow-y: auto; box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 15px rgba(174, 25, 50, 0.1); }
+        .ranking-box { background: rgba(20, 10, 12, 0.7); padding: 30px; border-radius: 14px; border: 1px solid rgba(174, 25, 50, 0.3); flex: 1; min-width: 320px; max-height: 420px; overflow-y: auto; box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 15px rgba(174, 25, 50, 0.1); }
         .ranking-box::-webkit-scrollbar { width: 6px; }
         .ranking-box::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
         .ranking-box::-webkit-scrollbar-thumb { background: rgba(174, 25, 50, 0.5); border-radius: 3px; }
@@ -41,11 +50,11 @@
         .loading-text-small { text-align: center; color: #ae1932; font-size: 13px; padding: 30px 0; animation: pulse 1.5s infinite; }
 
         /* 고급스러운 버튼 시스템 */
-        .btn-group { display: flex; flex-direction: column; gap: 14px; }
-        button { padding: 16px 20px; font-size: 14px; cursor: pointer; border: 1px solid rgba(174, 25, 50, 0.3); border-radius: 8px; font-weight: 700; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; color: #e2e8f0; background: rgba(174, 25, 50, 0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .btn-group { display: flex; flex-direction: column; gap: 12px; }
+        button.play-btn { padding: 14px 20px; font-size: 13px; cursor: pointer; border: 1px solid rgba(174, 25, 50, 0.3); border-radius: 8px; font-weight: 700; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; color: #e2e8f0; background: rgba(174, 25, 50, 0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
         
-        button::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: rgba(174, 25, 50, 0.2); border-radius: 50%; transform: translate(-50%, -50%); transition: width 0.4s, height 0.4s; z-index: -1; }
-        button:hover::after { width: 300px; height: 300px; }
+        button.play-btn::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: rgba(174, 25, 50, 0.2); border-radius: 50%; transform: translate(-50%, -50%); transition: width 0.4s, height 0.4s; z-index: -1; }
+        button.play-btn:hover::after { width: 300px; height: 300px; }
         
         .btn-easy:hover { border-color: #ae1932; color: #fff; box-shadow: 0 0 15px rgba(174, 25, 50, 0.3); }
         .btn-normal:hover { border-color: #ae1932; color: #fff; box-shadow: 0 0 20px rgba(174, 25, 50, 0.5); text-shadow: 0 0 5px rgba(255,255,255,0.5); }
@@ -66,10 +75,10 @@
         
         @keyframes pulse { from { opacity: 0.6; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        /* 탄약 슬롯 컨테이너 (정렬 및 간격 최적화) */
+        /* 탄약 슬롯 컨테이너 */
         .slot-container { display: flex; gap: 8px; margin-top: 8px; }
 
-        /* 공 모양 슬롯 (비었을 때) */
+        /* 공 모양 슬롯 */
         .ball-slot { 
             width: 14px; height: 14px; 
             background: rgba(255, 255, 255, 0.03); 
@@ -79,7 +88,7 @@
             box-shadow: inset 0 0 6px rgba(0,0,0,0.8);
         }
 
-        /* 공이 채워졌을 때 (원래의 노란색 + 입체감) */
+        /* 공이 채워졌을 때 */
         .ball-slot.filled { 
             background: #f1c40f; border-color: #fff; 
             box-shadow: 0 0 12px #f1c40f, inset -3px -3px 6px rgba(184, 134, 11, 0.8); 
@@ -100,7 +109,7 @@
             #hud { top: 12px; left: 12px; right: 12px; }
             .hud-panel { padding: 12px 16px; min-width: 140px; }
             .score-blue, .score-red { font-size: 20px; }
-            .menu-box h1 { font-size: 30px; }
+            .menu-box h1 { font-size: 26px; }
         }
     </style>
 
@@ -116,10 +125,18 @@
             <div class="menu-box">
                 <h1 style="font-size: 24px; white-space: nowrap;">FRC 2026/2nd SSRC</h1>
                 <p>SSRC TEAM2 TURTLESS</p>
+                
+                <div class="robot-select-title">Select Your Robot</div>
+                <div class="robot-options">
+                    <button class="robot-btn active" data-robot="TURRET" onclick="selectRobot('TURRET')">TURRET SHOOTER<br>(GREEN)</button>
+                    <button class="robot-btn" data-robot="DUMPER" onclick="selectRobot('DUMPER')">VECTOR DUMPER<br>(ORANGE)</button>
+                    <button class="robot-btn" data-robot="CLIMBER" onclick="selectRobot('CLIMBER')">LATCH CLIMBER<br>(PURPLE)</button>
+                </div>
+
                 <div class="btn-group">
-                    <button class="btn-easy" onclick="startLoading('EASY')">EASY MODE</button>
-                    <button class="btn-normal" onclick="startLoading('NORMAL')">NORMAL MODE(RANKING)</button>
-                    <button class="btn-hard" onclick="startLoading('HARD')">HARD MODE</button>
+                    <button class="play-btn btn-easy" onclick="startLoading('EASY')">EASY MODE</button>
+                    <button class="play-btn btn-normal" onclick="startLoading('NORMAL')">NORMAL MODE(RANKING)</button>
+                    <button class="play-btn btn-hard" onclick="startLoading('HARD')">HARD MODE</button>
                 </div>
             </div>
             
@@ -207,6 +224,16 @@
         }
         fetchLeaderboard();
 
+        // 글로벌 설정 및 로봇 타입 선택 추가
+        let selectedRobotType = 'TURRET'; // 기본값 초록 로봇
+        function selectRobot(type) {
+            selectedRobotType = type;
+            document.querySelectorAll('.robot-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.dataset.robot === type) btn.classList.add('active');
+            });
+        }
+
         let gameState = 'MENU', timeLeft = 135, totalDroppedCycles = 0; 
         let score = 0, ballCount = 0, aiScore = 0, aiBallCount = 0, aiShootCooldown = 0;
         let currentDifficulty = 'NORMAL'; 
@@ -217,7 +244,7 @@
         let fieldBalls = [], activeBullets = []; 
         const GRAVITY = 0.015; 
         
-        // 공 색상은 원래의 노란색 유지
+        const BALL_GEO = new THREE.SphereGeometry(0.25, 16, 16);
         const GLOBAL_YELLOW_MAT = new THREE.MeshLambertMaterial({ color: 0xf1c40f });
 
         function createSlots(containerId) {
@@ -238,7 +265,6 @@
 
         const canvas = document.getElementById('gameCanvas');
         const scene = new THREE.Scene();
-        // 배경에 살짝 붉은 빛이 도는 안개 추가 (크림슨 테마 연장)
         scene.fog = new THREE.FogExp2(0x0a0507, 0.02);
         
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -246,7 +272,7 @@
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x0a0507); // 캔버스 기본 배경도 살짝 붉은 어두운 톤
+        renderer.setClearColor(0x0a0507);
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -258,13 +284,149 @@
         const centerLine = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 14), new THREE.MeshBasicMaterial({ color: 0xae1932, transparent: true, opacity: 0.5 }));
         centerLine.rotation.x = -Math.PI / 2; centerLine.position.set(0, 0.01, 0); scene.add(centerLine);
 
-        const goalGeo = new THREE.BoxGeometry(1.5, 3, 4);
-        const blueGoal = new THREE.Mesh(goalGeo, new THREE.MeshLambertMaterial({ color: 0x2980b9 })); blueGoal.position.set(-12.5, 1.5, 0); scene.add(blueGoal);
-        const redGoal = new THREE.Mesh(goalGeo, new THREE.MeshLambertMaterial({ color: 0xae1932 })); redGoal.position.set(12.5, 1.5, 0); scene.add(redGoal);
+        // 오픈스캐드 규격 골대 3D 렌더링
+        function createOfficialGoal(colorHex) {
+            const goalGroup = new THREE.Group();
+            const mat = new THREE.MeshLambertMaterial({ color: colorHex });
+            const metalMat = new THREE.MeshLambertMaterial({ color: 0x757575 });
 
-        const robotGeo = new THREE.BoxGeometry(1.2, 1, 1.2);
-        const playerRobot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0x2980b9 })); playerRobot.position.set(-6, 0.5, 0); scene.add(playerRobot);
-        const aiRobot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0xae1932 })); aiRobot.position.set(6, 0.5, 0); scene.add(aiRobot);
+            const baseMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 2.2, 16), mat);
+            baseMesh.position.y = 1.1;
+            goalGroup.add(baseMesh);
+
+            const funnelMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 0.8, 0.8, 16, 1, true), metalMat);
+            funnelMesh.position.y = 2.6;
+            goalGroup.add(funnelMesh);
+
+            return goalGroup;
+        }
+
+        const blueGoal = createOfficialGoal(0x2980b9); blueGoal.position.set(-12.5, 0, 0); scene.add(blueGoal);
+        const redGoal = createOfficialGoal(0xae1932); redGoal.position.set(12.5, 0, 0); scene.add(redGoal);
+
+        // ==========================================
+        // [오픈스캐드 규격 3D 로봇 에셋 빌더]
+        // ==========================================
+        const COLOR_BOT_GREEN = 0x1abc9c; 
+        const COLOR_BOT_ORANGE = 0xe67e22; 
+        const COLOR_BOT_PURPLE = 0x9b59b6; 
+        const COLOR_METAL = 0xbdc3c7;
+
+        // 공통 로봇 프레임워크 섀시 (범퍼 + 바퀴 + 프레임)
+        function createRobotChassis(bumperColorHex) {
+            const chassis = new THREE.Group();
+            const bumperMat = new THREE.MeshLambertMaterial({ color: bumperColorHex });
+            const metalMat = new THREE.MeshLambertMaterial({ color: COLOR_METAL });
+            const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+
+            // 외부 범퍼 프레임 (가로세로 74mm 대칭 구조 축소 비율)
+            const bumper = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.24, 1.4), bumperMat);
+            bumper.position.y = 0.12;
+            chassis.add(bumper);
+
+            // 알루미늄 내부 메탈 프레임
+            const innerFrame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.12, 1.2), metalMat);
+            innerFrame.position.y = 0.14;
+            chassis.add(innerFrame);
+
+            // 4개 바퀴 (Cylinder)
+            const wheelGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.2, 12);
+            wheelGeo.rotateZ(Math.PI / 2);
+
+            const offsets = [[0.54, 0.54], [-0.54, 0.54], [0.54, -0.54], [-0.54, -0.54]];
+            offsets.forEach(offset => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.position.set(offset[0], 0.1, offset[1]);
+                chassis.add(wheel);
+            });
+
+            return chassis;
+        }
+
+        // 로봇 1: 터렛 슈터 (초록)
+        function buildTurretShooter() {
+            const bot = createRobotChassis(COLOR_BOT_GREEN);
+            const metalMat = new THREE.MeshLambertMaterial({ color: COLOR_METAL });
+            const greenMat = new THREE.MeshLambertMaterial({ color: COLOR_BOT_GREEN });
+
+            // 터렛 베이스 회전판
+            const turretPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.16, 16), new THREE.MeshLambertMaterial({ color: 0x333333 }));
+            turretPlate.position.y = 0.3;
+            bot.add(turretPlate);
+
+            // 포탑 구조체 (각도 회전)
+            const turretTop = new THREE.Group();
+            turretTop.position.y = 0.5;
+
+            const shooterBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.5), greenMat);
+            turretTop.add(shooterBody);
+
+            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 12), metalMat);
+            barrel.rotateZ(-Math.PI / 3); // 30도 위로 겨냥
+            barrel.position.set(0.3, 0.1, 0);
+            turretTop.add(barrel);
+
+            bot.add(turretTop);
+            return bot;
+        }
+
+        // 로봇 2: 벡터 덤퍼 (주황)
+        function buildVectorDumper() {
+            const bot = createRobotChassis(COLOR_BOT_ORANGE);
+            const metalMat = new THREE.MeshLambertMaterial({ color: COLOR_METAL });
+            const orangeMat = new THREE.MeshLambertMaterial({ color: COLOR_BOT_ORANGE });
+
+            // 지지 가이드 빔
+            const beamLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.52, 0.12), metalMat);
+            beamLeft.position.set(-0.3, 0.4, 0.32);
+            bot.add(beamLeft);
+
+            const beamRight = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.52, 0.12), metalMat);
+            beamRight.position.set(-0.3, 0.4, -0.32);
+            bot.add(beamRight);
+
+            // 적재함 슬라이더 구조 (뒤쪽 경사)
+            const dumperBin = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.48, 0.84), orangeMat);
+            dumperBin.position.set(0.2, 0.72, 0);
+            dumperBin.rotation.z = -0.26; // 뒤쪽으로 살짝 경사
+            bot.add(dumperBin);
+
+            return bot;
+        }
+
+        // 로봇 3: 래치 클라이머 (보라)
+        function buildLatchClimber() {
+            const bot = createRobotChassis(COLOR_BOT_PURPLE);
+            const metalMat = new THREE.MeshLambertMaterial({ color: COLOR_METAL });
+            const purpleMat = new THREE.MeshLambertMaterial({ color: COLOR_BOT_PURPLE });
+
+            // 중앙 보라색 바디 박스
+            const centerCore = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.48, 0.7), purpleMat);
+            centerCore.position.y = 0.38;
+            bot.add(centerCore);
+
+            // 클라이머 지탱 빔 타워
+            const liftTower = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.2, 0.24), metalMat);
+            liftTower.position.set(-0.4, 0.8, 0);
+            bot.add(liftTower);
+
+            // 상단 래치 고리 후크 구조
+            const hook = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.32, 0.32), metalMat);
+            hook.position.set(-0.2, 1.4, 0);
+            hook.rotation.z = 0.26;
+            bot.add(hook);
+
+            return bot;
+        }
+
+        // 선택 및 무작위에 따른 실시간 인스턴스 팩토리
+        function generateRobotMesh(type) {
+            if(type === 'TURRET') return buildTurretShooter();
+            if(type === 'DUMPER') return buildVectorDumper();
+            return buildLatchClimber(); // CLIMBER
+        }
+
+        let playerRobot, aiRobot;
 
         const keys = { w: false, a: false, s: false, d: false }; let joystickVector = { x: 0, y: 0 };
         window.addEventListener('keydown', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; if(e.code === 'Space' && gameState === 'PLAYING') shootBall('PLAYER'); });
@@ -313,6 +475,20 @@
             document.getElementById('loading-text').classList.add('hidden');
             document.getElementById('hud').classList.remove('hidden');
             gameState = 'PLAYING';
+
+            // 1. 플레이어 로봇 생성 배치
+            playerRobot = generateRobotMesh(selectedRobotType);
+            playerRobot.position.set(-6, 0, 0);
+            scene.add(playerRobot);
+
+            // 2. AI 로봇은 랜덤하게 생성 배치
+            const robotOptions = ['TURRET', 'DUMPER', 'CLIMBER'];
+            const randomAiType = robotOptions[Math.floor(Math.random() * robotOptions.length)];
+            aiRobot = generateRobotMesh(randomAiType);
+            aiRobot.position.set(6, 0, 0);
+            aiRobot.rotation.y = Math.PI; // AI 로봇은 마주보도록 180도 회전
+            scene.add(aiRobot);
+
             gameInterval = setInterval(() => {
                 timeLeft--; document.getElementById('time-display').innerText = timeLeft;
                 if(timeLeft <= 10) document.getElementById('time-display').classList.add('timer-danger');
@@ -324,7 +500,7 @@
         function dropBalls() {
             totalDroppedCycles++;
             for(let i=0; i<10; i++) {
-                const ball = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), GLOBAL_YELLOW_MAT);
+                const ball = new THREE.Mesh(BALL_GEO, GLOBAL_YELLOW_MAT);
                 ball.position.set((Math.random() - 0.5) * 10, 6 + Math.random() * 2, (Math.random() - 0.5) * 10); scene.add(ball); fieldBalls.push(ball);
             }
         }
@@ -333,15 +509,15 @@
             let startPos, targetGoalPos, owner, spreadX = 0, spreadZ = 0; 
             if (shooter === 'PLAYER') {
                 if (ballCount <= 0) return; ballCount--; updateSlots('player-slots', ballCount); 
-                startPos = playerRobot.position; targetGoalPos = new THREE.Vector3(12.5, 2.5, 0); owner = 'PLAYER';
+                startPos = playerRobot.position; targetGoalPos = new THREE.Vector3(12.5, 3.0, 0); owner = 'PLAYER';
                 spreadX = (Math.random() - 0.5) * 0.8; spreadZ = (Math.random() - 0.5) * 0.8;
             } else {
                 if (aiBallCount <= 0) return; aiBallCount--; updateSlots('ai-slots', aiBallCount);
-                startPos = aiRobot.position; targetGoalPos = new THREE.Vector3(-12.5, 2.5, 0); owner = 'AI';
+                startPos = aiRobot.position; targetGoalPos = new THREE.Vector3(-12.5, 3.0, 0); owner = 'AI';
                 spreadX = (Math.random() - 0.5) * activeAiConfig.errorMargin; spreadZ = (Math.random() - 0.5) * activeAiConfig.errorMargin;
             }
 
-            const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), GLOBAL_YELLOW_MAT);
+            const bullet = new THREE.Mesh(BALL_GEO, GLOBAL_YELLOW_MAT);
             bullet.position.copy(startPos); bullet.position.y = 1.0; scene.add(bullet);
             const distanceX = (targetGoalPos.x + spreadX) - startPos.x; const distanceZ = (targetGoalPos.z + spreadZ) - startPos.z;
             const travelFrames = Math.abs(distanceX) * 3.5; 
@@ -349,6 +525,11 @@
             const vy = (targetGoalPos.y - startPos.y) / travelFrames + 0.5 * GRAVITY * travelFrames;
             activeBullets.push({ mesh: bullet, velocity: new THREE.Vector3(vx, vy, vz), targetPos: targetGoalPos, owner: owner });
         }
+
+        // 충돌 물리 연산 구조 상수
+        const GOAL_Y_TOP = 2.8;       
+        const GOAL_RADIUS = 1.3;     
+        const GOAL_CYL_RADIUS = 0.8; 
 
         function gameLoop() {
             requestAnimationFrame(gameLoop);
@@ -375,6 +556,7 @@
 
                 for (let i = fieldBalls.length - 1; i >= 0; i--) {
                     const ball = fieldBalls[i]; if (ball.position.y > 0.25) ball.position.y -= 0.1; 
+                    // 로봇 중심점 기준 충돌 감지
                     if (playerRobot.position.distanceTo(ball.position) < 1.1 && ballCount < 7) { 
                         scene.remove(ball); fieldBalls.splice(i, 1); ballCount++; updateSlots('player-slots', ballCount); continue;
                     }
@@ -383,24 +565,63 @@
                     }
                 }
 
+                // 공 충돌 및 물리 엔진 루프
                 for (let i = activeBullets.length - 1; i >= 0; i--) {
                     const bullet = activeBullets[i];
+                    const prevY = bullet.mesh.position.y;
+                    
                     bullet.mesh.position.add(bullet.velocity); 
                     bullet.velocity.y -= GRAVITY;
+                    const currY = bullet.mesh.position.y;
 
-                    if (bullet.mesh.position.distanceTo(bullet.targetPos) < 1.8) { 
-                        if (bullet.owner === 'PLAYER') { score++; document.getElementById('score-display').innerText = score; } 
-                        else { aiScore++; document.getElementById('ai-score-display').innerText = aiScore; }
-                        scene.remove(bullet.mesh); 
-                        activeBullets.splice(i, 1);
-                        continue; 
-                    } 
+                    const targetGoalX = bullet.targetPos.x;
+                    const targetGoalZ = 0; 
                     
+                    const dx = bullet.mesh.position.x - targetGoalX;
+                    const dz = bullet.mesh.position.z - targetGoalZ;
+                    const horizontalDist = Math.sqrt(dx*dx + dz*dz);
+
+                    // [판정 1] 골대 구멍으로 통과 시 득점
+                    if (prevY >= GOAL_Y_TOP && currY <= GOAL_Y_TOP) {
+                        if (horizontalDist <= GOAL_RADIUS) {
+                            if (bullet.owner === 'PLAYER') { 
+                                score++; 
+                                document.getElementById('score-display').innerText = score; 
+                            } else { 
+                                aiScore++; 
+                                document.getElementById('ai-score-display').innerText = aiScore; 
+                            }
+                            scene.remove(bullet.mesh); 
+                            activeBullets.splice(i, 1);
+                            continue;
+                        }
+                    }
+
+                    // [판정 2] 옆면 바운스
+                    if (currY < GOAL_Y_TOP && currY > 0.25) {
+                        if (horizontalDist < GOAL_CYL_RADIUS) {
+                            const angle = Math.atan2(dz, dx);
+                            const normalX = Math.cos(angle);
+                            const normalZ = Math.sin(angle);
+
+                            bullet.mesh.position.x = targetGoalX + normalX * GOAL_CYL_RADIUS;
+                            bullet.mesh.position.z = targetGoalZ + normalZ * GOAL_CYL_RADIUS;
+
+                            const dotProduct = bullet.velocity.x * normalX + bullet.velocity.z * normalZ;
+                            bullet.velocity.x -= 2 * dotProduct * normalX * 0.6;
+                            bullet.velocity.z -= 2 * dotProduct * normalZ * 0.6;
+                            
+                            bullet.velocity.y = Math.abs(bullet.velocity.y) * 0.5; 
+                        }
+                    }
+
+                    // 외곽 가림막 충돌
                     if (bullet.mesh.position.x > 12.7) { bullet.mesh.position.x = 12.7; bullet.velocity.x *= -0.6; }
                     if (bullet.mesh.position.x < -12.7) { bullet.mesh.position.x = -12.7; bullet.velocity.x *= -0.6; }
                     if (bullet.mesh.position.z > 6.7) { bullet.mesh.position.z = 6.7; bullet.velocity.z *= -0.6; }
                     if (bullet.mesh.position.z < -6.7) { bullet.mesh.position.z = -6.7; bullet.velocity.z *= -0.6; }
 
+                    // 바닥 충돌
                     if (bullet.mesh.position.y <= 0.25) {
                         bullet.mesh.position.y = 0.25;
                         bullet.velocity.y *= -0.5; 
