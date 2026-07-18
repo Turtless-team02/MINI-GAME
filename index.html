@@ -225,7 +225,7 @@
         fetchLeaderboard();
 
         // 글로벌 설정 및 로봇 타입 선택 추가
-        let selectedRobotType = 'TURRET'; // 기본값 초록 로봇
+        let selectedRobotType = 'TURRET'; 
         function selectRobot(type) {
             selectedRobotType = type;
             document.querySelectorAll('.robot-btn').forEach(btn => {
@@ -290,58 +290,36 @@
         function createOfficialGoal(colorHex) {
             const goalGroup = new THREE.Group();
             const teamMat = new THREE.MeshLambertMaterial({ color: colorHex });
-            const metalMat = new THREE.MeshLambertMaterial({ color: 0x95a5a6 }); // COLOR_METAL
-            const darkBaseMat = new THREE.MeshLambertMaterial({ color: 0x222222 }); // 검은색 지지 기둥 하부
+            const metalMat = new THREE.MeshLambertMaterial({ color: 0x95a5a6 });
+            const darkBaseMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
             const polycarbMat = new THREE.MeshPhysicalMaterial({ 
-                color: 0x8cc4ff, 
-                transparent: true, 
-                opacity: 0.35, 
-                roughness: 0.1, 
-                transmission: 0.9, 
-                thickness: 0.5 
-            }); // COLOR_POLYCARB
-
-            // 1. 하부 경사 범퍼 플레이트
-            const basePlatform = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 1.8), teamMat);
-            basePlatform.position.y = 0.3;
-            goalGroup.add(basePlatform);
-
-            const rampSlope = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.2, 1.2), teamMat);
-            rampSlope.rotation.x = 0.26;
-            rampSlope.position.set(0, 0.1, -0.6);
-            goalGroup.add(rampSlope);
-
-            // 2. 검은색 중앙 기둥 지지 구조물
-            const coreColumn = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.4, 1.0), darkBaseMat);
-            coreColumn.position.y = 1.3;
-            goalGroup.add(coreColumn);
-
-            // 3. 골대 입구 플레이트 베이스
-            const metalPlate = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.08, 1.1), metalMat);
-            metalPlate.position.y = 2.0;
-            goalGroup.add(metalPlate);
-
-            // 4. 사방 지지대 메탈 실린더 기둥 4개
-            const rodGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.4, 8); // 충돌 최소화를 위해 굵기를 더 가늘게(0.06 -> 0.04)
-            const rodPositions = [
-                [0.48, 0.48], [-0.48, 0.48], [0.48, -0.48], [-0.48, -0.48]
-            ];
-            rodPositions.forEach(pos => {
-                const rod = new THREE.Mesh(rodGeo, metalMat);
-                rod.position.set(pos[0], 1.3, pos[1]);
-                goalGroup.add(rod);
+                color: 0x8cc4ff, transparent: true, opacity: 0.35, roughness: 0.1, transmission: 0.9, thickness: 0.5 
             });
 
-            // 5. 상부 메탈 깔때기
-            const funnelMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 0.8, 0.8, 16, 1, true), metalMat);
-            funnelMesh.position.y = 2.6;
-            goalGroup.add(funnelMesh);
+            const basePlatform = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 1.8), teamMat);
+            basePlatform.position.y = 0.3; goalGroup.add(basePlatform);
 
-            // 6. 폴리카보네이트 투명 백보드 (눈을 즐겁게 하되, 공은 수평 통과하도록 충돌 간소화)
+            const rampSlope = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.2, 1.2), teamMat);
+            rampSlope.rotation.x = 0.26; rampSlope.position.set(0, 0.1, -0.6); goalGroup.add(rampSlope);
+
+            const coreColumn = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.4, 1.0), darkBaseMat);
+            coreColumn.position.y = 1.3; goalGroup.add(coreColumn);
+
+            const metalPlate = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.08, 1.1), metalMat);
+            metalPlate.position.y = 2.0; goalGroup.add(metalPlate);
+
+            const rodGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.4, 8); 
+            const rodPositions = [[0.48, 0.48], [-0.48, 0.48], [0.48, -0.48], [-0.48, -0.48]];
+            rodPositions.forEach(pos => {
+                const rod = new THREE.Mesh(rodGeo, metalMat);
+                rod.position.set(pos[0], 1.3, pos[1]); goalGroup.add(rod);
+            });
+
+            const funnelMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 0.8, 0.8, 16, 1, true), metalMat);
+            funnelMesh.position.y = 2.6; goalGroup.add(funnelMesh);
+
             const backboard = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.0, 0.08), polycarbMat);
-            backboard.position.set(0, 2.7, 0.6);
-            backboard.rotation.x = 0.17;
-            goalGroup.add(backboard);
+            backboard.position.set(0, 2.7, 0.6); backboard.rotation.x = 0.17; goalGroup.add(backboard);
 
             return goalGroup;
         }
@@ -352,10 +330,7 @@
         // ==========================================
         // [오픈스캐드 규격 3D 로봇 에셋 빌더]
         // ==========================================
-        const COLOR_BOT_GREEN = 0x1abc9c; 
-        const COLOR_BOT_ORANGE = 0xe67e22; 
-        const COLOR_BOT_PURPLE = 0x9b59b6; 
-        const COLOR_METAL = 0xbdc3c7;
+        const COLOR_BOT_GREEN = 0x1abc9c, COLOR_BOT_ORANGE = 0xe67e22, COLOR_BOT_PURPLE = 0x9b59b6, COLOR_METAL = 0xbdc3c7;
 
         function createRobotChassis(bumperColorHex) {
             const chassis = new THREE.Group();
@@ -364,46 +339,33 @@
             const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
 
             const bumper = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.24, 1.4), bumperMat);
-            bumper.position.y = 0.12;
-            chassis.add(bumper);
+            bumper.position.y = 0.12; chassis.add(bumper);
 
             const innerFrame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.12, 1.2), metalMat);
-            innerFrame.position.y = 0.14;
-            chassis.add(innerFrame);
+            innerFrame.position.y = 0.14; chassis.add(innerFrame);
 
-            const wheelGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.2, 12);
-            wheelGeo.rotateZ(Math.PI / 2);
-
+            const wheelGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.2, 12); wheelGeo.rotateZ(Math.PI / 2);
             const offsets = [[0.54, 0.54], [-0.54, 0.54], [0.54, -0.54], [-0.54, -0.54]];
             offsets.forEach(offset => {
                 const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                wheel.position.set(offset[0], 0.1, offset[1]);
-                chassis.add(wheel);
+                wheel.position.set(offset[0], 0.1, offset[1]); chassis.add(wheel);
             });
-
             return chassis;
         }
 
         function buildTurretShooter() {
             const bot = createRobotChassis(COLOR_BOT_GREEN);
-            const metalMat = new THREE.MeshLambertMaterial({ color: COLOR_METAL });
             const greenMat = new THREE.MeshLambertMaterial({ color: COLOR_BOT_GREEN });
-
             const turretPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.16, 16), new THREE.MeshLambertMaterial({ color: 0x333333 }));
-            turretPlate.position.y = 0.3;
-            bot.add(turretPlate);
+            turretPlate.position.y = 0.3; bot.add(turretPlate);
 
-            const turretTop = new THREE.Group();
-            turretTop.position.y = 0.5;
-
-            const shooterBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.5), greenMat);
-            turretTop.add(shooterBody);
-
-            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 12), metalMat);
-            barrel.rotateZ(-Math.PI / 3);
-            barrel.position.set(0.3, 0.1, 0);
+            const turretTop = new THREE.Group(); turretTop.position.y = 0.5;
+            const shooterBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.5), greenMat); turretTop.add(shooterBody);
+            
+            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 12), new THREE.MeshLambertMaterial({ color: COLOR_METAL }));
+            barrel.rotateX(Math.PI / 2); barrel.position.set(0, 0.1, 0.3); // 배럴 방향 Z축(정면)으로 수정
             turretTop.add(barrel);
-
+            
             bot.add(turretTop);
             return bot;
         }
@@ -413,19 +375,12 @@
             const metalMat = new THREE.MeshLambertMaterial({ color: COLOR_METAL });
             const orangeMat = new THREE.MeshLambertMaterial({ color: COLOR_BOT_ORANGE });
 
-            const beamLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.52, 0.12), metalMat);
-            beamLeft.position.set(-0.3, 0.4, 0.32);
-            bot.add(beamLeft);
-
-            const beamRight = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.52, 0.12), metalMat);
-            beamRight.position.set(-0.3, 0.4, -0.32);
-            bot.add(beamRight);
+            const beamLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.52, 0.12), metalMat); beamLeft.position.set(-0.3, 0.4, 0.32); bot.add(beamLeft);
+            const beamRight = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.52, 0.12), metalMat); beamRight.position.set(0.3, 0.4, 0.32); bot.add(beamRight); // 좌우 대칭 수정
 
             const dumperBin = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.48, 0.84), orangeMat);
-            dumperBin.position.set(0.2, 0.72, 0);
-            dumperBin.rotation.z = -0.26;
+            dumperBin.position.set(0, 0.72, 0.2); dumperBin.rotation.x = -0.26; // 회전축 X로 수정 (정면 향하게)
             bot.add(dumperBin);
-
             return bot;
         }
 
@@ -434,19 +389,12 @@
             const metalMat = new THREE.MeshLambertMaterial({ color: COLOR_METAL });
             const purpleMat = new THREE.MeshLambertMaterial({ color: COLOR_BOT_PURPLE });
 
-            const centerCore = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.48, 0.7), purpleMat);
-            centerCore.position.y = 0.38;
-            bot.add(centerCore);
-
-            const liftTower = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.2, 0.24), metalMat);
-            liftTower.position.set(-0.4, 0.8, 0);
-            bot.add(liftTower);
-
-            const hook = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.32, 0.32), metalMat);
-            hook.position.set(-0.2, 1.4, 0);
-            hook.rotation.z = 0.26;
+            const centerCore = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.48, 0.7), purpleMat); centerCore.position.y = 0.38; bot.add(centerCore);
+            const liftTower = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.2, 0.12), metalMat); liftTower.position.set(0, 0.8, -0.4); bot.add(liftTower);
+            
+            const hook = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.32, 0.5), metalMat);
+            hook.position.set(0, 1.4, -0.2); hook.rotation.x = -0.26; // 후크 방향 수정
             bot.add(hook);
-
             return bot;
         }
 
@@ -457,24 +405,17 @@
         }
 
         let playerRobot, aiRobot;
-
         const keys = { w: false, a: false, s: false, d: false }; let joystickVector = { x: 0, y: 0 };
         window.addEventListener('keydown', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; if(e.code === 'Space' && gameState === 'PLAYING') shootBall('PLAYER'); });
         window.addEventListener('keyup', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
 
         let joystickManager = null;
-
         function initMobileControls() {
             const mobileControls = document.getElementById('mobile-controls');
             if (window.innerWidth <= 768 || 'ontouchstart' in window) {
                 mobileControls.style.display = 'block';
                 if (!joystickManager) {
-                    joystickManager = nipplejs.create({ 
-                        zone: document.getElementById('joystick-zone'), 
-                        mode: 'static', 
-                        position: { left: '50%', top: '50%' }, 
-                        color: '#ae1932' 
-                    });
+                    joystickManager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: { left: '50%', top: '50%' }, color: '#ae1932' });
                     joystickManager.on('move', (evt, data) => { 
                         const force = Math.min(data.force, 1); 
                         joystickVector.x = Math.cos(data.angle.radian) * force; 
@@ -482,11 +423,8 @@
                     });
                     joystickManager.on('end', () => { joystickVector = { x: 0, y: 0 }; });
                 }
-            } else {
-                mobileControls.style.display = 'none';
-            }
+            } else { mobileControls.style.display = 'none'; }
         }
-
         initMobileControls();
         window.addEventListener('resize', initMobileControls);
 
@@ -494,8 +432,7 @@
         document.getElementById('btn-shoot').addEventListener('mousedown', (e) => { e.preventDefault(); if(gameState === 'PLAYING') shootBall('PLAYER'); });
 
         function startLoading(difficulty) {
-            currentDifficulty = difficulty; 
-            activeAiConfig = aiStats[difficulty]; 
+            currentDifficulty = difficulty; activeAiConfig = aiStats[difficulty]; 
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('loading-text').classList.remove('hidden');
             gameState = 'LOADING'; setTimeout(startGame, 1000);
@@ -511,8 +448,7 @@
             scene.add(playerRobot);
 
             const robotOptions = ['TURRET', 'DUMPER', 'CLIMBER'];
-            const randomAiType = robotOptions[Math.floor(Math.random() * robotOptions.length)];
-            aiRobot = generateRobotMesh(randomAiType);
+            aiRobot = generateRobotMesh(robotOptions[Math.floor(Math.random() * robotOptions.length)]);
             aiRobot.position.set(6, 0, 0);
             aiRobot.rotation.y = Math.PI;
             scene.add(aiRobot);
@@ -538,7 +474,6 @@
             if (shooter === 'PLAYER') {
                 if (ballCount <= 0) return; ballCount--; updateSlots('player-slots', ballCount); 
                 startPos = playerRobot.position; targetGoalPos = new THREE.Vector3(12.5, 3.2, 0); owner = 'PLAYER';
-                // 조준 궤적 안전성 증가 (조준 난이도 완화)
                 spreadX = (Math.random() - 0.5) * 0.4; spreadZ = (Math.random() - 0.5) * 0.4;
             } else {
                 if (aiBallCount <= 0) return; aiBallCount--; updateSlots('ai-slots', aiBallCount);
@@ -555,12 +490,17 @@
             activeBullets.push({ mesh: bullet, velocity: new THREE.Vector3(vx, vy, vz), targetPos: targetGoalPos, owner: owner });
         }
 
+        const GOAL_Y_TOP = 2.6, GOAL_RADIUS = 1.8, GOAL_CYL_RADIUS = 0.65;
+
         // ==========================================
-        // [골인 밸런스 패치 및 판정 튜닝]
+        // [각도 보간 헬퍼 함수]
         // ==========================================
-        const GOAL_Y_TOP = 2.6;       // 판정 고도 하향 (공이 골대 주변에 더 쉽게 진입하도록)
-        const GOAL_RADIUS = 1.8;      // 골인 허용 반경 대폭 상향 (1.3 -> 1.8 자석 효과 제공)
-        const GOAL_CYL_RADIUS = 0.65; // 기둥 충돌 반경 축소 (0.8 -> 0.65 기둥 튕김 억제)
+        function lerpAngle(start, end, amt) {
+            let diff = end - start;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            return start + diff * amt;
+        }
 
         function gameLoop() {
             requestAnimationFrame(gameLoop);
@@ -569,6 +509,14 @@
                 if (keys.w) moveZ -= speed; if (keys.s) moveZ += speed;
                 if (keys.a) moveX -= speed; if (keys.d) moveX += speed;
                 if (joystickVector.x !== 0 || joystickVector.y !== 0) { moveX = joystickVector.x * speed; moveZ = joystickVector.y * speed; }
+
+                // ==========================================
+                // [수정됨: 플레이어 로봇 회전 애니메이션]
+                // ==========================================
+                if (moveX !== 0 || moveZ !== 0) {
+                    const targetAngle = Math.atan2(moveX, moveZ);
+                    playerRobot.rotation.y = lerpAngle(playerRobot.rotation.y, targetAngle, 0.2);
+                }
 
                 if (playerRobot.position.z + moveZ > -6.5 && playerRobot.position.z + moveZ < 6.5) playerRobot.position.z += moveZ;
                 if (playerRobot.position.x + moveX > -11.5 && playerRobot.position.x + moveX < 11.5) playerRobot.position.x += moveX;
@@ -582,8 +530,19 @@
                         if (dist < minDist) { minDist = dist; targetBall = fieldBalls[i]; }
                     }
                     const moveDir = new THREE.Vector3().subVectors(targetBall.position, aiRobot.position); moveDir.y = 0; 
-                    if (moveDir.length() > 0.1) { moveDir.normalize(); aiRobot.position.addScaledVector(moveDir, activeAiConfig.speed); }
-                } else if (aiBallCount > 0 && aiShootCooldown <= 0) { shootBall('AI'); aiShootCooldown = activeAiConfig.shootDelay; }
+                    if (moveDir.length() > 0.1) { 
+                        moveDir.normalize(); 
+                        aiRobot.position.addScaledVector(moveDir, activeAiConfig.speed); 
+                        
+                        // ==========================================
+                        // [수정됨: AI 로봇 회전 애니메이션]
+                        // ==========================================
+                        const targetAiAngle = Math.atan2(moveDir.x, moveDir.z);
+                        aiRobot.rotation.y = lerpAngle(aiRobot.rotation.y, targetAiAngle, 0.2);
+                    }
+                } else if (aiBallCount > 0 && aiShootCooldown <= 0) { 
+                    shootBall('AI'); aiShootCooldown = activeAiConfig.shootDelay; 
+                }
 
                 for (let i = fieldBalls.length - 1; i >= 0; i--) {
                     const ball = fieldBalls[i]; if (ball.position.y > 0.25) ball.position.y -= 0.1; 
@@ -595,7 +554,7 @@
                     }
                 }
 
-                // 공 충돌 및 물리 엔진 루프
+                // 총알(공) 궤적 루프
                 for (let i = activeBullets.length - 1; i >= 0; i--) {
                     const bullet = activeBullets[i];
                     const prevY = bullet.mesh.position.y;
@@ -604,64 +563,35 @@
                     bullet.velocity.y -= GRAVITY;
                     const currY = bullet.mesh.position.y;
 
-                    const targetGoalX = bullet.targetPos.x;
-                    const targetGoalZ = 0; 
-                    
-                    const dx = bullet.mesh.position.x - targetGoalX;
-                    const dz = bullet.mesh.position.z - targetGoalZ;
+                    const dx = bullet.mesh.position.x - bullet.targetPos.x;
+                    const dz = bullet.mesh.position.z - 0;
                     const horizontalDist = Math.sqrt(dx*dx + dz*dz);
 
-                    // [판정 1] 골대 위쪽 구멍 득점 (자석 반경 적용)
-                    if (prevY >= GOAL_Y_TOP && currY <= GOAL_Y_TOP) {
-                        if (horizontalDist <= GOAL_RADIUS) {
-                            if (bullet.owner === 'PLAYER') { 
-                                score++; 
-                                document.getElementById('score-display').innerText = score; 
-                            } else { 
-                                aiScore++; 
-                                document.getElementById('ai-score-display').innerText = aiScore; 
-                            }
-                            scene.remove(bullet.mesh); 
-                            activeBullets.splice(i, 1);
-                            continue;
-                        }
+                    if (prevY >= GOAL_Y_TOP && currY <= GOAL_Y_TOP && horizontalDist <= GOAL_RADIUS) {
+                        if (bullet.owner === 'PLAYER') { score++; document.getElementById('score-display').innerText = score; } 
+                        else { aiScore++; document.getElementById('ai-score-display').innerText = aiScore; }
+                        scene.remove(bullet.mesh); activeBullets.splice(i, 1); continue;
                     }
 
-                    // [판정 2] 옆면 기둥 충돌 바운스 (탄성 감쇠 적용)
-                    if (currY < GOAL_Y_TOP && currY > 0.25) {
-                        if (horizontalDist < GOAL_CYL_RADIUS) {
-                            const angle = Math.atan2(dz, dx);
-                            const normalX = Math.cos(angle);
-                            const normalZ = Math.sin(angle);
-
-                            bullet.mesh.position.x = targetGoalX + normalX * GOAL_CYL_RADIUS;
-                            bullet.mesh.position.z = targetGoalZ + normalZ * GOAL_CYL_RADIUS;
-
-                            const dotProduct = bullet.velocity.x * normalX + bullet.velocity.z * normalZ;
-                            // 반사 각도 속도를 0.6 -> 0.45로 줄여서 부딪힐 때 가볍게 흐르도록 감쇠 패치
-                            bullet.velocity.x -= 2 * dotProduct * normalX * 0.45;
-                            bullet.velocity.z -= 2 * dotProduct * normalZ * 0.45;
-                            
-                            bullet.velocity.y = Math.abs(bullet.velocity.y) * 0.35; 
-                        }
+                    if (currY < GOAL_Y_TOP && currY > 0.25 && horizontalDist < GOAL_CYL_RADIUS) {
+                        const angle = Math.atan2(dz, dx);
+                        bullet.mesh.position.x = bullet.targetPos.x + Math.cos(angle) * GOAL_CYL_RADIUS;
+                        bullet.mesh.position.z = Math.sin(angle) * GOAL_CYL_RADIUS;
+                        const dotProduct = bullet.velocity.x * Math.cos(angle) + bullet.velocity.z * Math.sin(angle);
+                        bullet.velocity.x -= 2 * dotProduct * Math.cos(angle) * 0.45;
+                        bullet.velocity.z -= 2 * dotProduct * Math.sin(angle) * 0.45;
+                        bullet.velocity.y = Math.abs(bullet.velocity.y) * 0.35; 
                     }
 
-                    // 외곽 가림막
                     if (bullet.mesh.position.x > 12.7) { bullet.mesh.position.x = 12.7; bullet.velocity.x *= -0.6; }
                     if (bullet.mesh.position.x < -12.7) { bullet.mesh.position.x = -12.7; bullet.velocity.x *= -0.6; }
                     if (bullet.mesh.position.z > 6.7) { bullet.mesh.position.z = 6.7; bullet.velocity.z *= -0.6; }
                     if (bullet.mesh.position.z < -6.7) { bullet.mesh.position.z = -6.7; bullet.velocity.z *= -0.6; }
 
-                    // 바닥 충돌
                     if (bullet.mesh.position.y <= 0.25) {
-                        bullet.mesh.position.y = 0.25;
-                        bullet.velocity.y *= -0.5; 
-                        bullet.velocity.x *= 0.8;  
-                        bullet.velocity.z *= 0.8;
-
+                        bullet.mesh.position.y = 0.25; bullet.velocity.y *= -0.5; bullet.velocity.x *= 0.8; bullet.velocity.z *= 0.8;
                         if (Math.abs(bullet.velocity.y) < 0.1 && Math.abs(bullet.velocity.x) < 0.05 && Math.abs(bullet.velocity.z) < 0.05) {
-                            fieldBalls.push(bullet.mesh);
-                            activeBullets.splice(i, 1);
+                            fieldBalls.push(bullet.mesh); activeBullets.splice(i, 1);
                         }
                     }
                 }
@@ -670,40 +600,20 @@
         }
 
         function endGame() {
-            clearInterval(gameInterval); 
-            clearInterval(dropInterval); 
-            gameState = 'MENU';
-            
+            clearInterval(gameInterval); clearInterval(dropInterval); gameState = 'MENU';
             const lowestTop10Score = leaderboard.length < 10 ? 0 : leaderboard[leaderboard.length - 1].score;
             
             if (currentDifficulty === 'NORMAL' && score > 0 && (score > lowestTop10Score || leaderboard.length < 10)) {
                 setTimeout(() => {
                     let nick = prompt(`[GLOBAL TOP 10 ENTRY - NORMAL MODE]\nSCORE: ${score} PTS\nEnter your Nickname (max 10 chars):`, "Player");
                     if (nick) {
-                        nick = nick.substring(0, 10);
-                        db.collection("rankings").add({ 
-                            name: nick, 
-                            score: score, 
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-                        })
-                        .then(() => { 
-                            alert(`SUCCESS!\nFINAL SCORE: YOU ${score} - ${aiScore} AI`); 
-                            location.reload(); 
-                        })
-                        .catch(() => { 
-                            alert("Server Error."); 
-                            location.reload(); 
-                        });
-                    } else { 
-                        location.reload(); 
-                    }
+                        db.collection("rankings").add({ name: nick.substring(0, 10), score: score, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
+                        .then(() => { alert(`SUCCESS!\nFINAL SCORE: YOU ${score} - ${aiScore} AI`); location.reload(); })
+                        .catch(() => { alert("Server Error."); location.reload(); });
+                    } else { location.reload(); }
                 }, 400);
             } else { 
-                let alertMsg = `MATCH OVER!\nFINAL SCORE: YOU ${score} - ${aiScore} AI`;
-                if (currentDifficulty !== 'NORMAL') {
-                    alertMsg += `\n\n* Leaderboard entry is only available in NORMAL MODE.`;
-                }
-                alert(alertMsg); 
+                alert(`MATCH OVER!\nFINAL SCORE: YOU ${score} - ${aiScore} AI${currentDifficulty !== 'NORMAL' ? '\n\n* Leaderboard entry is only available in NORMAL MODE.' : ''}`); 
                 location.reload(); 
             }
         }
